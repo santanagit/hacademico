@@ -1,0 +1,75 @@
+-----------------------------------------------------------------------------------------------------------------------------------
+Certificado de Curso FIC
+-----------------------------------------------------------------------------------------------------------------------------------
+
+----------------
+Primeira página|
+----------------
+
+O Instituto Federal de Educação, Ciência e Tecnologia do Sudeste de Minas Gerais – Campus Avançado Bom Sucesso certifica que |nome|
+, concluiu o curso de Formação Inicial e Continuada - |curso|
+, realizado no período de |inicio| a |fim|, com carga horária total de |ch| horas.
+
+Bom Sucesso, data_geracao.
+
+Nome Coordenado de Ensino
+Resolução
+Assinatura (Imagem)
+
+---------------
+Segunda página|
+---------------
+
+CURSO DE FORMAÇÃO INICIAL E CONTINUADA
+AGRICULTOR ORGÂNICO
+Ato Autorizativo: Resolução nº |resolucao|
+
+Perfil de Conclusão: 
+|perfil_conclusao|
+
+Conteúdo Programático:
+|atividade|ch| 
+
+Total:
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Certificado de Evento (Participante)
+-----------------------------------------------------------------------------------------------------------------------------------
+
+----------------
+Primeira página|
+----------------
+
+O Instituto Federal de Educação, Ciência e Tecnologia do Sudeste de Minas Gerais – Campus Avançado Bom Sucesso certifica que |nome|
+, participou das atividades da |evento|
+, realizado no período de |inicio| a |fim|, com carga horária total de |ch| horas.
+
+Bom Sucesso, data_geracao.
+
+Nome Coordenado de Ensino
+Resolução
+Assinatura (Imagem)
+
+---------------
+Segunda página|
+---------------
+
+ATIVIDADES
+
+|atividade|ch| 
+
+Total:
+
+-----------------------------------------------------------------------------------------------------------------------------------
+Certificado de Evento (Palestrante)
+-----------------------------------------------------------------------------------------------------------------------------------
+
+O Instituto Federal de Educação, Ciência e Tecnologia do Sudeste de Minas Gerais – Campus Avançado Bom Sucesso certifica que |nome|
+, participou das atividades da |evento|
+, realizado no período de |inicio| a |fim|, com carga horária total de |ch| horas.
+
+Bom Sucesso, data_geracao.
+
+Nome Coordenado de Ensino
+Resolução
+Assinatura (Imagem)
