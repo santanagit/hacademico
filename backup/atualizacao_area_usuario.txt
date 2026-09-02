@@ -1,0 +1,28 @@
+UPDATE usuario SET `area` = Setor de Ensino" WHERE id_usuario = 285
+UPDATE usuario SET `area` = "Informática" WHERE id_usuario = 286;
+UPDATE usuario SET `area` = "Informática" WHERE id_usuario = 287;
+UPDATE usuario SET `area` = "Meio Ambiente" WHERE id_usuario = 288;
+UPDATE usuario SET `area` = "Administração" WHERE id_usuario = 289;
+UPDATE usuario SET `area` = "Informática" WHERE id_usuario = 290;
+UPDATE usuario SET `area` = "Informática" WHERE id_usuario = 291;
+UPDATE usuario SET `area` = "Propedêutica" WHERE id_usuario = 292;
+UPDATE usuario SET `area` = "Administração" WHERE id_usuario = 293;
+UPDATE usuario SET `area` = "Meio Ambiente" WHERE id_usuario = 294;
+UPDATE usuario SET `area` = "Meio Ambiente" WHERE id_usuario = 295;
+UPDATE usuario SET `area` = "Propedêutica" WHERE id_usuario = 296;
+UPDATE usuario SET `area` = "Propedêutica" WHERE id_usuario = 297;
+UPDATE usuario SET `area` = "Administração" WHERE id_usuario = 298;
+UPDATE usuario SET `area` = "Meio Ambiente" WHERE id_usuario = 299;
+UPDATE usuario SET `area` = "Informática" WHERE id_usuario = 301;
+UPDATE usuario SET `area` = "Meio Ambiente" WHERE id_usuario = 302;
+UPDATE usuario SET `area` = "Informática" WHERE id_usuario = 303;
+UPDATE usuario SET `area` = "Meio Ambiente" WHERE id_usuario = 304;
+UPDATE usuario SET `area` = "Administração" WHERE id_usuario = 305;
+UPDATE usuario SET `area` = "Meio Ambiente" WHERE id_usuario = 306;
+UPDATE usuario SET `area` = "Setor de Ensino" WHERE id_usuario = 308;
+UPDATE usuario SET `area` = "Setor de Ensino" WHERE id_usuario = 309;
+UPDATE usuario SET `area` = "Setor de Ensino" WHERE id_usuario = 311;
+UPDATE usuario SET `area` = "Setor de Ensino" WHERE id_usuario = 316;
+UPDATE usuario SET `area` = "Administração" WHERE id_usuario = 317;
+UPDATE usuario SET `area` = "Informática" WHERE id_usuario = 318;
+UPDATE usuario SET `area` = "Informática" WHERE id_usuario = 319;

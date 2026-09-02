@@ -1,0 +1,1 @@
+CREATE VIEW ultimo_historico_atividade AS SELECT id_atividade_docente,MAX(id_historico_atividade) AS id_historico_atividade FROM historico_atividade GROUP BY id_atividade_docente

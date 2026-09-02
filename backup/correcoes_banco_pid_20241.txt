@@ -1,0 +1,23 @@
+SELECT
+	usuario.nome AS professor,
+	atividade_docente.id_atividade_docente,
+	historico_atividade.id_historico_atividade,
+	etapa,
+	situacao,	
+	data_situacao,
+	observacao
+FROM
+	pid INNER JOIN usuario
+		ON pid.id_usuario = usuario.id_usuario
+	INNER JOIN periodo
+		ON pid.id_periodo = periodo.id_periodo
+	INNER JOIN atividade_docente
+		ON atividade_docente.id_pid = pid.id_pid
+	INNER JOIN atividade
+		ON atividade_docente.id_atividade = atividade.id_atividade
+	INNER JOIN historico_atividade
+		ON atividade_docente.id_atividade_docente = historico_atividade.id_atividade_docente
+WHERE
+	periodo.ano = 2024 AND
+	periodo.semestre = 1 AND
+	etapa = 'RID';

@@ -1,0 +1,194 @@
+id_disciplina,descricao,chs,cht,chs_ead
+191,"Fundamentos da Administração",4,66.67,0
+192,"Informática Aplicada a Administração		",2,33.33,0
+193,"Fundamentos da Matemática		",4,66.67,0
+194,"Gestão de Pessoas",4,66.67,0
+195,"Contabilidade Básica",2,33.33,0
+196,"Administração de Marketing e Serviços",4,66.67,0
+197,"Administração da Produção e Logística",2,33.33,0
+198,"Prática Profissional Integrada I",1,16.67,0
+199,"Gestão de Projetos",2,33.33,0
+200,"Matemática Comercial e Financeira		",4,66.67,0
+201,"Estratégia Empresarial e Gestão da Qualidade",4,66.67,0
+202,"Português Técnico",2,33.33,0
+203,Empreendedorismo,2,33.33,0
+204,"Administração Financeira",4,66.67,0
+205,"Administração de Recursos  Materiais e Patrimoniais",4,66.67,0
+206,"Sustentabilidade e Gestão Ambiental",2,33.33,0
+207,"Prática Profissional Integrada II",1,16.67,0
+208,"Informática Básica",3,50,1
+209,"Ecologia dos Ecossistemas",2,33.33,0
+210,"Educação Ambiental e Saúde",4,66.67,0
+211,Hidrologia,5,83.3,2
+212,"Português Instrumental",5,83.3,0
+213,"Matemática Aplicada ao Meio Ambiente",3,50,1
+214,Solos,4,66.67,1
+215,"Química e Microbiologia Ambiental",5,83.3,0
+216,"Biologia da Conservação",2,33.33,0
+217,Climatologia,4,66.67,0
+218,"Recuperação de Áreas Degradadas",3,50,1
+219,"Elaboração e Análise de Projetos Ambientais",4,66.67,2
+220,"Algoritmos e Lógica de Programação",4,66.67,0
+221,"Português Instrumental",4,66.67,0
+222,"Matemática Aplicada à Informática I",2,33.33,0
+223,"Introdução aos Sistemas Operacionais",4,66.67,2
+224,"Montagem e Manutenção",4,66.67,0
+225,"PROGRAMAÇÃO WEB I",4,66.67,2
+226,"Linguagem de Programação I",4,66.67,0
+227,"Redes de Computadores",5,83.33,1
+228,"Programação Web II",4,66.67,0
+229,"Inglês Técnico",2,33.33,0
+230,"Matemática Aplicada à Informática II",2,33.33,0
+231,"Banco de Dados I",4,66.67,2
+232,"Projetos de Práticas Profissionais",2,33.33,0
+233,"Fundamentos da Computação",4,80,0
+234,"Português Aplicado a Informática",4,80,0
+235,"Matemática Aplicada a Computação",4,80,0
+236,"Algoritmo e Lógica de Programação",4,80,0
+237,"Introdução aos Sistemas Operacionais",4,80,0
+238,"Tópicos de Estatística",2,40,0
+239,"Inglês Instrumental",2,40,0
+240,"Linguagem de Programação I",4,80,0
+241,"Banco de Dados I",4,80,0
+242,"Redes de Computadores I",4,80,0
+243,"Engenharia de Software",4,80,2
+244,"Matemática Financeira		",2,40,0
+245,"Projeto Integrador",4,80,2
+246,"Linguagem de Programação II",4,80,0
+247,"Redes de Computadores II",4,80,0
+248,"Gestão de Projetos",2,40,0
+249,"Banco de Dados II",4,80,0
+250,"Sistemas Distribuídos",4,80,2
+251,"Linguagem de Programação III",4,80,0
+252,"Design de Interação e Usabilidade",2,40,0
+253,"Tópicos Especiais em Tecnologia da Informação",2,40,0
+254,"Programação Web I",4,80,0
+255,"Metodologia Científica I",4,80,2
+256,"Metodologia Científica II",4,80,2
+257,"Segurança e Auditoria de Sistemas",4,80,2
+258,"Programação para Dispositivos Móveis",4,80,0
+259,"Introdução ao Cálculo",2,40,0
+260,"Empreendedorismo e Inovação",2,40,0
+261,"Programação Web II",4,80,0
+262,"Climatologia e Meteorologia",2,40,0
+263,"Ecologia Básica",2,40,0
+264,"Introdução à Informática",2,40,0
+265,"Português e suas Comunicações",2,40,0
+266,"Química Ambiental",2,40,0
+267,"Práticas de Extensão Ambiental",2,40,0
+268,"Segurança do Trabalho",2,40,2
+269,"Tópicos de Matemática",2,40,0
+270,"Fundamentos de Hidrologia",2,40,0
+271,"Gestão da Qualidade da Água",2,40,0
+272,"Recursos Energéticos",2,40,1
+273,"Microbiologia Ambiental",2,40,0
+274,"Educação Ambiental",2,40,0
+275,"Estatística Aplicada ao Meio Ambiente",2,40,0
+276,"Princípios de Gestão",2,40,0
+277,"Inglês Instrumental",2,40,0
+278,"Metodologia e Técnicas de Pesquisa",2,40,1
+279,"Agricultura e Meio Ambiente",2,40,0
+280,"Avaliação de Impactos e Licenciamento Ambiental",2,40,0
+281,"Biologia da Conservação",2,40,0
+282,"Tratamento de Águas Residuárias",2,40,0
+283,"Gestão e Tratamento de Resíduos Sólidos",4,80,2
+284,"Solos e Meio ambiente",4,80,0
+285,Geotecnologias,2,40,0
+286,"Trabalho de Conclusão de Curso 1",2,40,2
+287,"Diversidade dos Seres Vivos",2,40,0
+288,"Gestão Agroflorestal",4,80,2
+289,"Recuperação Áreas Degradadas",2,40,0
+290,"Meio Ambiente e Saúde",2,40,0
+292,"Manejo e Conservação do Solo e da Água",2,40,0
+293,"Gestão de Projetos",2,40,2
+294,"Trabalho de Conclusão de Curso 2",2,40,0
+295,Agrofloresta,4,66.67,2
+296,Geotecnologias,5,83.33,0
+297,"Avaliação de Impactos e Licenciamento Ambiental",3,50,1
+298,"Gestão de Resíduos Sólidos",4,66.67,0
+299,"Gestão Ambiental",4,66.67,1
+301,"Banco de Dados II",3,50,1
+302,"Programção Web III",4,66.67,0
+303,"Linguagem de Programação II",4,66.67,0
+304,Empreendedorismo,2,33.33,0
+305,"Projeto e Segurança de Redes",3,50,1
+308,"Introdução ao Desenvolvimento de Jogos",2,33.33,0
+309,"Legislação Ambiental",2,40,0
+310,"Cafeicultura Ecológica",2,33.33,0
+311,"FIC - Inglês Básico",8,160,0
+312,"FIC - Assistente Administrativo",8,160,0
+313,"Fundamentos da Computação",3,60,0
+314,"Português Aplicado a Computação",2,40,0
+315,"AAIFE - Ação de Extensão Aplicada a Computação I",3,60,0
+316,"AAIFE - Ação de Extensão Aplicada a Computação II",2,40,0
+317,"Banco de Dados I",2,40,0
+318,"AAIFE - Ação de Extensão Aplicada a Computação III",2,40,0
+319,"Programação Web III",4,80,0
+320,"Programação Web II",2,40,0
+321,"AAIFE - Ação de Extensão Aplicada a Computação IV",3,60,0
+322,"Trabalho de Conclusão de Curso I",3,60,0
+323,"Trabalho de Conclusão de Curso II",2,40,0
+324,"Estrutura de Dados",4,80,0
+325,"Segurança e Auditoria de Sistemas",2,40,0
+326,"Modelagem de Software",2,40,0
+327,"Educação Inclusiva",2,40,0
+328,"Frameworks de Desenvolvimento Back-end",2,40,0
+329,"Arquitetura de computadores",2,40,0
+330,"Programação paralela e distribuída",2,40,0
+331,"Língua Brasileira de Sinais – LIBRAS",2,40,0
+332,"Introdução ao Desenvolvimento de Jogos ",2,40,0
+333,"Inteligência Artificial",2,40,0
+334,"Comunicação e Expressão",4,2,0
+335,"Design de Interfaces Gráficas",2,40,0
+336,"Métodos Ordenação e Pesquisa",2,40,0
+337,"Sistemas Digitais",2,40,0
+338,"Tecnologias da Informação e Meio Ambiente",2,40,0
+339,"Projeto e Análise de Algoritmos",2,40,0
+340,"AAIFE - Ação de Extensão I",2,40,0
+341,"Introdução à Gestão Ambiental",1,20,0
+342,"AAIFE - Ação de Extensão II",2,40,0
+343,"AAIFE - Ação de Extensão III",4,80,0
+344,"Cafeicultura Ecológica",2,40,0
+345,"Controle Biológico",2,40,0
+346,"Relações Humanas e Diversidade",2,40,0
+347,"Gestão de Áreas Naturais",2,40,0
+348,"Tópicos especiais",2,40,0
+349,"Programação Web I",2,40,0
+350,"Engenharia de Software",2,40,0
+351,"FIC - Agricultor Orgânico",8,160,0
+352,"FIC - Auxiliar de Fiscalização Ambiental (Presencial)",8,160,0
+353,"FIC - Auxiliar de Fiscalização Ambiental (EAD)",8,160,8
+354,"FIC - Montador e Reparador de Computador (EAD)",8,160,8
+355,"FIC – Programador WEB (EAD)",8,160,8
+356,"Ambientação em Educação à Distância",1,20,1
+357,"Introdução à Informática",2,40,2
+358,"Introdução ao agronegócio",3,60,3
+359,"Gestão do Negócio e Empreendedorismo",4,80,4
+360,"Contabilidade Básica",2,40,2
+361,"Gestão de pessoas ",2,40,2
+362,"Manejo e conservação do solo e da água",4,80,4
+363,"Fundamentos da Matemática",2,40,2
+364,"Administração de Marketing e Serviços",2,40,2
+365,"Sistemas e técnicas de produção agropecuárias",3,60,3
+366,"Português Aplicado",2,40,2
+367,"Administração Financeira",3,60,3
+368,"Gestão de Processamento de Produtos de Origem Vegetal e Animal",4,80,4
+369,"Administração de custos e riscos ",2,40,2
+370,"Gestão da Qualidade",2,40,2
+371,"Gestão de Projetos ",2,40,2
+372,"Geotecnologias ",3,60,3
+373,"Saúde, higiene e segurança do trabalho",3,60,3
+374,"Matemática Financeira",4,80,4
+375,"Sustentabilidade no Agronegócio",2,40,2
+376,Cafeicultura,2,40,2
+377,"Projeto Integrador",2,40,2
+378,Libras,2,40,2
+379,"Legislação Ambiental",2,40,2
+380,"Gestão de empresas rurais",2,40,2
+381,"Associativismo e cooperativismo",2,40,2
+382,"Estatística Básica",2,40,2
+383,"Mecanização e Sistema de Automação no Agronegócio",2,40,2
+384,"Sustentabilidade nas Organizações",2,40,2
+385,"Agricultura Familiar",2,40,2
+386,"Economia e negócios",2,40,2
+387,"Tecnologias da Informação aplicadas ao Agronegócio",2,40,2
