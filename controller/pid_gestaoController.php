@@ -667,7 +667,20 @@ class pid_gestaoController {
                      * Recupera a situação da atividade
                      */
                     $result_historico_atividade = $this->historico_atividadeM->getSituacaoAtividade($linha_atividade_docente['id_atividade_docente'], 'RID');
+                    $result_historico_atividade_pid = $this->historico_atividadeM->getSituacaoAtividade($linha_atividade_docente['id_atividade_docente'], 'PID');
+                    
                     $linha_historico_atividade = mysqli_fetch_assoc($result_historico_atividade);
+                    
+                    /*
+                     * Podem existir atividades canceladas no PID ou
+                     * Atividades não planejadas no PID
+                     * Essas deveram constar como planjedas 0 horas
+                     */
+                    if ($result_historico_atividade_pid) {
+                        $linha_historico_atividade_pid = mysqli_fetch_assoc($result_historico_atividade_pid);
+                    } else {
+                        $linha_historico_atividade_pid['situacao'] = 'NÃO PLANEJADA';
+                    }
 
                     if (
                             ($linha_historico_atividade['situacao'] == 'AGUARDANDO AVALIAÇÃO') || 
@@ -677,8 +690,22 @@ class pid_gestaoController {
                         if (($soma_grupo_planejadas == 0) && ($soma_grupo_executadas == 0)) {
                             $tabela .= $tabela_temp;
                         }
+                        
                         $soma_grupo_executadas = $soma_grupo_executadas + $linha_atividade_docente['horas_executadas'];
-                        $soma_grupo_planejadas = $soma_grupo_planejadas + $linha_atividade_docente['horas_planejadas'];
+                        
+                        
+                        /*
+                         * Só soma se tiver sido planejada e não cancelada no PID
+                         */
+                        if (
+                                ($linha_historico_atividade_pid['situacao'] != 'CANCELADA') &&
+                                ($linha_historico_atividade_pid['situacao'] != 'NÃO PLANEJADA')
+                            ) {
+                            $soma_grupo_planejadas = $soma_grupo_planejadas + $linha_atividade_docente['horas_planejadas'];
+                            
+                        } else {
+                            $linha_atividade_docente['horas_planejadas'] = 0;
+                        }
 
                         $tabela .= '<tr>';
                          if ($id_tipo_atividade == 1) {
