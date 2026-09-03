@@ -258,7 +258,33 @@ class rid_avaliacaoController {
 
                     $result_historico_atividade = $this->historico_atividadeM->getSituacaoAtividade($linha_atividade_docente['id_atividade_docente'], 'RID');
                     $linha_historico_atividade = mysqli_fetch_assoc($result_historico_atividade);
+                    
+                    $result_historico_atividade_pid = $this->historico_atividadeM->getSituacaoAtividade($linha_atividade_docente['id_atividade_docente'], 'PID');
+                    if ($result_historico_atividade_pid) {
+                        $linha_historico_atividade_pid = mysqli_fetch_assoc($result_historico_atividade_pid);
+                    } else {
+                        $linha_historico_atividade_pid['situacao'] = 'NÃO PLANEJADA';
+                    }
 
+                    
+                    if (
+                            ($linha_historico_atividade['situacao'] != 'CANCELADA') &&
+                            ($linha_historico_atividade['situacao'] != 'REPROVADA') &&
+                            ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA')
+                    ) {
+                        $soma_grupo_executadas += $linha_atividade_docente['horas_executadas'];
+                    }
+                    
+                    if (
+                              ($linha_historico_atividade_pid['situacao'] != 'CANCELADA') &&
+                              ($linha_historico_atividade_pid['situacao'] != 'NÃO PLANEJADA')
+                          ) {                    
+                        $soma_grupo_planejadas += $linha_atividade_docente['horas_planejadas'];
+                    } else {
+                        $linha_atividade_docente['horas_planejadas'] = 0;
+                    }
+                    
+                    
                     $atividades_docente[$id_tipo_atividade][] = $linha_historico_atividade['situacao'];
 
                     $tabela .= '<tr>';
@@ -302,15 +328,8 @@ class rid_avaliacaoController {
                     }
                     $tabela .= '</td></tr>';
 
-                    if (
-                            ($linha_historico_atividade['situacao'] != 'CANCELADA') &&
-                            ($linha_historico_atividade['situacao'] != 'REPROVADA') &&
-                            ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA')
-                    ) {
-                        $soma_grupo_executadas += $linha_atividade_docente['horas_executadas'];
-                    }
-                    $soma_grupo_planejadas += $linha_atividade_docente['horas_planejadas'];
 
+                    
                     $soma_grupo_executadas = round($soma_grupo_executadas, 2);
                     $soma_grupo_planejadas = round($soma_grupo_planejadas, 2);
                 }
@@ -382,6 +401,24 @@ class rid_avaliacaoController {
                         $result_historico_atividade = $this->historico_atividadeM->getSituacaoAtividade($linha_atividade_docente['id_atividade_docente'], 'RID');
                         $linha_historico_atividade = mysqli_fetch_assoc($result_historico_atividade);
 
+                        $result_historico_atividade_pid = $this->historico_atividadeM->getSituacaoAtividade($linha_atividade_docente['id_atividade_docente'], 'PID');
+                        if ($result_historico_atividade_pid) {
+                            $linha_historico_atividade_pid = mysqli_fetch_assoc($result_historico_atividade_pid);
+                        } else {
+                            $linha_historico_atividade_pid['situacao'] = 'NÃO PLANEJADA';
+                        }                        
+                        
+
+                        if (
+                                ($linha_historico_atividade_pid['situacao'] != 'CANCELADA') &&
+                                ($linha_historico_atividade_pid['situacao'] != 'NÃO PLANEJADA')
+                            ) {
+                            $soma_grupo_planejadas += $linha_atividade_docente['horas_planejadas'];
+                        } else {
+                            $linha_atividade_docente['horas_planejadas'] = 0;
+                        }
+                        $soma_grupo_executadas += $linha_atividade_docente['horas_executadas'];
+                        
                         $tabela .= '<tr>';
                         $tabela .= '<td>' . $linha_atividade_docente['atividade'] . '</td>';
                         $tabela .= '<td align="center"><input class="form-control" ' . $css_horas_executadas . ' type="text" name="horas_planejadas_' . $linha_atividade_docente['id_atividade_docente'] . '" id="horas_planejadas_' . $linha_atividade_docente['id_atividade_docente'] . '" value="' . $linha_atividade_docente['horas_planejadas'] . '"></td>';
@@ -426,8 +463,6 @@ class rid_avaliacaoController {
                         }
                         $tabela .= '</td></tr>';
 
-                        $soma_grupo_executadas += $linha_atividade_docente['horas_executadas'];
-                        $soma_grupo_planejadas += $linha_atividade_docente['horas_planejadas'];
                         $soma_grupo_executadas = round($soma_grupo_executadas, 2);
                         $soma_grupo_planejadas = round($soma_grupo_planejadas, 2);
                     }
