@@ -83,20 +83,6 @@ function atualizar_chs(id_atividade_docente,id_tipo_atividade) {
     });
 }
 
-//function carregarComponente(metodo, id) {
-//    $('#metodo').val(metodo);
-//    var dados = $('#formulario').serialize();
-//    $.ajax({
-//        url: 'controller/' + classe + '.php',
-//        type: 'post',
-//        dataType: 'html',
-//        data: dados
-//    }).done(function (resposta) {
-//        var json = JSON.parse(resposta);
-//        $('#' + id).html(json.select);
-//    });
-//}
-
 function carregarComponente(metodo, id) {
     var r = $.Deferred();
     $('#metodo').val(metodo);
@@ -186,20 +172,21 @@ function abrirModal(modal, metodo, id_atividade_docente, id_tipo_atividade) {
     
     $('#id_atividade_docente').val(id_atividade_docente);
     $('#id_tipo_atividade').val(id_tipo_atividade);
-    carregarComponente('carregarAtividade', 'div_atividade');
     
-    if (metodo == 'atualizar_atividade_pid') {
-        $('#metodo').val('getAtividade_docente');
-        carregar(id_atividade_docente);
-    } else {
-        // 3 - Aqui deve ser colocado os campos que serão limpos no formulario de 
-        // inserção
-        $('#descricao').val('');
-        $('#horas_planejadas').val('');
-        $('#observacao').val('');
-        $('#id_atividade').val('');
-        $('#div_historico_atividade').html('');
-    }    
+    $.when(carregarComponente('carregarAtividade', 'div_atividade')).done(function(){
+        if (metodo == 'atualizar_atividade_pid') {
+            $('#metodo').val('getAtividade_docente');
+            carregar(id_atividade_docente);
+        } else {
+            // 3 - Aqui deve ser colocado os campos que serão limpos no formulario de 
+            // inserção
+            $('#descricao').val('');
+            $('#horas_planejadas').val('');
+            $('#observacao').val('');
+            $('#id_atividade').val('');
+            $('#div_historico_atividade').html('');
+        }       
+    });
     
     $('#metodo').val(metodo);
     $('#' + modal).modal();

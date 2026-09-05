@@ -97,20 +97,6 @@ function atualizar_horas_executadas(id_atividade_docente, id_tipo_atividade) {
     }
 }
 
-//function carregarComponente(metodo, id) {
-//    $('#metodo').val(metodo);
-//    var dados = $('#formulario').serialize();
-//    $.ajax({
-//        url: 'controller/' + classe + '.php',
-//        type: 'post',
-//        dataType: 'html',
-//        data: dados
-//    }).done(function (resposta) {
-//        var json = JSON.parse(resposta);
-//        $('#' + id).html(json.select);
-//    });
-//}
-
 function carregarComponente(metodo, id) {
     var r = $.Deferred();
     $('#metodo').val(metodo);
@@ -208,27 +194,29 @@ function abrirModal(modal, metodo, id_atividade_docente, id_tipo_atividade, hora
 
     $('#id_atividade_docente').val(id_atividade_docente);
     $('#id_tipo_atividade').val(id_tipo_atividade);
-    carregarComponente('carregarAtividade', 'div_atividade');
+    
+    $.when(carregarComponente('carregarAtividade', 'div_atividade')).done(function(){
 
-    if (metodo == 'atualizar_atividade_rid') {
-        $('#metodo').val('getAtividade_docente');
-        carregar(id_atividade_docente,$('#horas_executadas_' + id_atividade_docente).val(),horas);
-        if (horas) {
-            $('#horas_executadas_' + id_atividade_docente).val('');
+        if (metodo == 'atualizar_atividade_rid') {
+            $('#metodo').val('getAtividade_docente');
+            carregar(id_atividade_docente,$('#horas_executadas_' + id_atividade_docente).val(),horas);
+            if (horas) {
+                $('#horas_executadas_' + id_atividade_docente).val('');
+            }
+
+
+        } else {
+            // 3 - Aqui deve ser colocado os campos que serão limpos no formulario de 
+            // inserção
+            $('#descricao').val('');
+            $('#horas_planejadas').val('');
+            $('#horas_executadas').val('');
+            $('#observacao').val('');
+            $('#id_atividade').val('');
+            $('#div_historico_atividade').html('');
         }
-       
-
-    } else {
-        // 3 - Aqui deve ser colocado os campos que serão limpos no formulario de 
-        // inserção
-        $('#descricao').val('');
-        $('#horas_planejadas').val('');
-        $('#horas_executadas').val('');
-        $('#observacao').val('');
-        $('#id_atividade').val('');
-        $('#div_historico_atividade').html('');
-    }
-
+    });
+    
     $('#metodo').val(metodo);
     $('#' + modal).modal();
 }
