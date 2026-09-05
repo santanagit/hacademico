@@ -97,7 +97,22 @@ function atualizar_horas_executadas(id_atividade_docente, id_tipo_atividade) {
     }
 }
 
+//function carregarComponente(metodo, id) {
+//    $('#metodo').val(metodo);
+//    var dados = $('#formulario').serialize();
+//    $.ajax({
+//        url: 'controller/' + classe + '.php',
+//        type: 'post',
+//        dataType: 'html',
+//        data: dados
+//    }).done(function (resposta) {
+//        var json = JSON.parse(resposta);
+//        $('#' + id).html(json.select);
+//    });
+//}
+
 function carregarComponente(metodo, id) {
+    var r = $.Deferred();
     $('#metodo').val(metodo);
     var dados = $('#formulario').serialize();
     $.ajax({
@@ -108,7 +123,11 @@ function carregarComponente(metodo, id) {
     }).done(function (resposta) {
         var json = JSON.parse(resposta);
         $('#' + id).html(json.select);
+        r.resolve(); // <-- RESOLVE a promise aqui!
+    }).fail(function (jqXHR, textStatus, errorThrown) {
+        r.reject(errorThrown);
     });
+    return r.promise(); // <-- RETORNA a promise!
 }
 
 function enviar(modal) {
