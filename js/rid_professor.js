@@ -19,10 +19,10 @@ $(document).ready(function () {
         // 2 - Aqui deve ser colocado o campos que terá o foco ao abrir o formulario
         $('#observacao').focus();
     });
-    
+
     $("#modal_formulario").on("hidden.bs.modal", function () {
         listar();
-    });    
+    });
 
     $('#btn_gravar').click(function () {
         enviar('modal_formulario');
@@ -65,8 +65,8 @@ function atualizar_horas_executadas(id_atividade_docente, id_tipo_atividade) {
     var horas_executadas = $('#horas_executadas_' + id_atividade_docente).val().replace(/,/g, ".");
     //console.log(horas_executadas);
 
-    if ((horas_executadas != $('#horas_planejadas_' + id_atividade_docente).val()) && (id_tipo_atividade != 2) ){
-        
+    if ((horas_executadas != $('#horas_planejadas_' + id_atividade_docente).val()) && (id_tipo_atividade != 2)) {
+
         abrirModal('modal_formulario', 'atualizar_atividade_rid', id_atividade_docente, id_tipo_atividade, true);
         //console.log($('#horas_executadas_' + id_atividade_docente).val()+" - "+$('#horas_planejadas_' + id_atividade_docente).val());
     } else {
@@ -138,7 +138,7 @@ function enviar(modal) {
     });
 }
 
-function carregar(id_atividade_docente,horas_executadas,horas) {
+function carregar(id_atividade_docente, horas_executadas, horas) {
     //console.log('Entrou na função carregar, metodo: '+$('#metodo').val());
     var dados = $('#formulario').serialize();
     $.ajax({
@@ -154,11 +154,11 @@ function carregar(id_atividade_docente,horas_executadas,horas) {
         $('#horas_executadas').val(horas_executadas);
         $('#id_atividade').val(json.id_atividade);
         $('#observacao').val('');
-        
+
         if (($('#horas_executadas_' + id_atividade_docente).val() != $('#horas_planejadas_' + id_atividade_docente).val()) && (horas)) {
             $('#modal_formulario_msg').html('<div class="alert alert-danger">A quantidade de horas planejadas é difrente da quantidade de horas executadas, preencha a justificativa no campo de observação!</div>');
-        }        
-        
+        }
+
         var tabela = '<table class="table table-bordered table-striped table-sm">';
         tabela += '<tr>'
         tabela += '<th colspan="5" style="text-align:center">Histórico de tramitação da atividade</th>';
@@ -194,29 +194,30 @@ function abrirModal(modal, metodo, id_atividade_docente, id_tipo_atividade, hora
 
     $('#id_atividade_docente').val(id_atividade_docente);
     $('#id_tipo_atividade').val(id_tipo_atividade);
-    carregarComponente('carregarAtividade', 'div_atividade');
+    $.when(carregarComponente('carregarAtividade', 'div_atividade')).done(function () {
 
-    if (metodo == 'atualizar_atividade_rid') {
-        $('#metodo').val('getAtividade_docente');
-        carregar(id_atividade_docente,$('#horas_executadas_' + id_atividade_docente).val(),horas);
-        if (horas) {
-            $('#horas_executadas_' + id_atividade_docente).val('');
+        if (metodo == 'atualizar_atividade_rid') {
+            $('#metodo').val('getAtividade_docente');
+            carregar(id_atividade_docente, $('#horas_executadas_' + id_atividade_docente).val(), horas);
+            if (horas) {
+                $('#horas_executadas_' + id_atividade_docente).val('');
+            }
+
+
+        } else {
+            // 3 - Aqui deve ser colocado os campos que serão limpos no formulario de 
+            // inserção
+            $('#descricao').val('');
+            $('#horas_planejadas').val('');
+            $('#horas_executadas').val('');
+            $('#observacao').val('');
+            $('#id_atividade').val('');
+            $('#div_historico_atividade').html('');
         }
-       
 
-    } else {
-        // 3 - Aqui deve ser colocado os campos que serão limpos no formulario de 
-        // inserção
-        $('#descricao').val('');
-        $('#horas_planejadas').val('');
-        $('#horas_executadas').val('');
-        $('#observacao').val('');
-        $('#id_atividade').val('');
-        $('#div_historico_atividade').html('');
-    }
-
-    $('#metodo').val(metodo);
-    $('#' + modal).modal();
+        $('#metodo').val(metodo);
+        $('#' + modal).modal();
+    });
 }
 
 function reativar_atividade(id_atividade_docente, id_tipo_atividade) {
@@ -268,7 +269,7 @@ function listar(msg) {
     });
 }
 
-function imprimir_rid(id_pid,id_usuario) {
+function imprimir_rid(id_pid, id_usuario) {
     $('#metodo').val('imprimir_rid');
     $('#id_pid').val(id_pid);
     $('#id_usuario').val(id_usuario);
@@ -280,8 +281,8 @@ function imprimir_rid(id_pid,id_usuario) {
         data: dados
     }).done(function (resposta) {
         var json = JSON.parse(resposta);
-        
+
         var win = window.open("pid_professor.html", "", "width=1024, height=768");
-        win.document.write(json.tabela);        
+        win.document.write(json.tabela);
     });
 }
