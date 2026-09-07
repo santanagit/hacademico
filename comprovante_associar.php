@@ -57,10 +57,14 @@ sessao::validar(array('Coordenador de Ensino','Coordenador de Curso'));
                                 </span>                                
                             </nav>
                             
-                            <div id="msg"></div>
-
-                            <div id="div_comprovante"></div>
-                            <div id="tabela"></div>
+                            <div class="col-md-12" id="msg"></div>
+                                                      
+                            <div class="col-md-12" id="div_comprovante"></div>                            
+                            <div class="col-md-6" d="div_arquivo">
+                                <iframe id="myframe" src="" width="100%" height="500" frameborder="0" style="border:0"></iframe>
+                            </div>
+                            
+                            <div class="col-md-6" id="tabela"></div>
 
                         </div>
                     </div>       

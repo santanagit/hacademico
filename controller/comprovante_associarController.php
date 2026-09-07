@@ -157,7 +157,8 @@ class comprovante_associarController {
         $select .= "<li> Descrição: {$linha_comprovante['descricao']} </li>";
         $select .= "<li> Vigência: {$linha_comprovante['inicio_vigencia']} à {$linha_comprovante['fim_vigencia']} </li>";
         $select .= "</ul>";
-        $resposta = array('select' => $select);
+        $url = 'http://' . $_SERVER['HTTP_HOST'] . '/hacademico/comprovantes/comprovante_' . $linha_comprovante['id_comprovante'] . '.pdf?nc=' . random_int(1, 10000);
+        $resposta = array('select' => $select, 'url' => $url);
         return json_encode($resposta);
     } 
     

@@ -45,6 +45,7 @@ function carregarComponente(metodo, id) {
     }).done(function (resposta) {
         var json = JSON.parse(resposta);
         $('#' + id).html(json.select);
+        $('#myframe').attr('src', json.url);
     });
 }
 
