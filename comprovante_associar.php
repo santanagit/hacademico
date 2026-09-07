@@ -51,7 +51,7 @@ sessao::validar(array('Coordenador de Ensino','Coordenador de Curso'));
                                     </button>
                                 </span>
                                 <span class="navbar-left" style="margin-left: 10px">
-                                    <button type="button" class="btn btn-danger form-control" id="btn_voltar" onclick="location.href='comprovante.php'">
+                                    <button type="button" class="btn btn-danger form-control" id="btn_voltar" onclick="voltarParaComprovante()">
                                         <span class="glyphicon glyphicon-arrow-left" style="padding-right: 5px"></span> Voltar
                                     </button>
                                 </span>                                

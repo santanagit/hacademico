@@ -4,10 +4,12 @@ var classe = 'comprovante_associarController';
 
 $(document).ready(function () {
     
-    var url = window.location.href;
-    var url_partes = url.split("=");
-    var id_comprovante = url_partes[url_partes.length - 1];
+    var parametros = new URLSearchParams(window.location.search);
+    var id_comprovante = parametros.get('id_comprovante');
+    var criterios = parametros.getAll('criterios[]');
     $('#id_comprovante').val(id_comprovante);
+    console.log('id_comprovante:', id_comprovante);
+    console.log('criterios:', criterios);
     
     listar();
     carregarComponente('carregarAtividade', 'div_atividade');
@@ -33,6 +35,37 @@ $(document).ready(function () {
         enviar('modal_confirmacao');
     });
 });
+
+function voltarParaComprovante() {
+    var parametros = new URLSearchParams(window.location.search);
+
+    var criterios = parametros.getAll('criterios[]');
+
+    var url = 'comprovante.php';
+
+    // Adiciona cada criterio[] à URL
+    $.each(criterios, function (indice, criterio) {
+        parametros = new URLSearchParams();
+
+        // Não é necessário recriar todos os parâmetros da URL atual.
+    });
+
+    var queryString = '';
+
+    $.each(criterios, function (indice, criterio) {
+        if (queryString !== '') {
+            queryString += '&';
+        }
+
+        queryString += 'criterios%5B%5D=' + encodeURIComponent(criterio);
+    });
+
+    if (queryString !== '') {
+        url += '?' + queryString;
+    }
+
+    location.href = url;
+}
 
 function carregarComponente(metodo, id) {
     $('#metodo').val(metodo);

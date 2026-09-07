@@ -36,7 +36,9 @@ class comprovanteController {
             $parametros = array();
         }
 
+        $criterios = array();
         if (isset($_POST['criterios'])) {
+            //print_r($_POST['criterios']);
             foreach ($_POST['criterios'] as $criterio) {
                 if ($criterio == 'grupo') {
                     $criterios['grupo'] = 1;
@@ -44,12 +46,8 @@ class comprovanteController {
                 if ($criterio == 'vigencia') {
                     $criterios['vigencia'] = 1;
                 }
-            }
-            
-        } else {
-            $criterios = array();
-        }
-
+            }      
+        } 
         
         $ordenacao = array('descricao' => 'DESC', 'id_comprovante' => 'DESC');
 
@@ -83,10 +81,12 @@ class comprovanteController {
                 $tabela .= '<td>' . $linha['fim_vigencia'] . '</td>';
 
                 $tabela .= '<td>';
-                $tabela .= '<a href="comprovante_associar.php?id_comprovante='.$linha['id_comprovante'].'" style="color:green">';
+                $tabela .= '<a href="javascript:void(0);" '
+                         . 'onclick="professores_associados(' . (int) $linha['id_comprovante'] . ');" '
+                         . 'style="color:green">';
                 $tabela .= '<span class="glyphicon glyphicon-link"></span>';
                 $tabela .= '</a>';
-                $tabela .= '</td>';               
+                $tabela .= '</td>';             
                 
                 $tabela .= '<td>';
                 $tabela .= '<a href="download.php?id_comprovante='.$linha['id_comprovante'].'" target="_blank" style="color:blue">';
@@ -116,7 +116,7 @@ class comprovanteController {
         $total_registros = mysqli_num_rows($resultado);
         $total_paginas = ceil($total_registros / $registros);
 
-        $resposta = array('tabela' => $tabela, 'total_paginas' => $total_paginas, 'pagina' => $pagina, 'registros' => $registros, 'filtro' => $_POST['filtro']);
+        $resposta = array('tabela' => $tabela, 'total_paginas' => $total_paginas, 'pagina' => $pagina, 'registros' => $registros, 'filtro' => $_POST['filtro'],'criterios' => $criterios);
         return json_encode($resposta);
     }
 
