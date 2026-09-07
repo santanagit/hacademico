@@ -26,16 +26,15 @@ class comprovanteController {
             $pagina = $_POST['pagina'];
         }
 
+        $parametros = array();
         if (trim($_POST['filtro']) != '') {
             $parametros = array('comprovante.id_comprovante' => $_POST['filtro'],
                 'inicio_vigencia' => $_POST['filtro'],
                 'fim_vigencia' => $_POST['filtro'],
                 'descricao' => $_POST['filtro']
             );
-        } else {
-            $parametros = array();
         }
-
+        
         $criterios = array();
         if (isset($_POST['criterios'])) {
             //print_r($_POST['criterios']);
