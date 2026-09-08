@@ -14,7 +14,7 @@ class tipo_atividadeModel {
     public function getTipoAtividade($id_tipo_atividade) {
         $sql = "SELECT * FROM tipo_atividade WHERE id_tipo_atividade = ?";
         $stmt = $this->bd->prepare($sql);
-        $stmt->bind_param("i", $id_atividade);
+        $stmt->bind_param("i", $id_tipo_atividade);
         $stmt->execute() or die($this->bd->error);
         $result = $stmt->get_result();
         return $result;
