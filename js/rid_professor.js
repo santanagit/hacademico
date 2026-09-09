@@ -91,8 +91,15 @@ function atualizar_horas_executadas(id_atividade_docente, id_tipo_atividade) {
         }).done(function (resposta) {
             var json = JSON.parse(resposta);
             if (json.resultado) {
-                listar(json.msg);
+                var idComponente = document.activeElement.id;
+                if (idComponente !== '') {
+                    listar(json.msg);
+                    setTimeout(function () {
+                        $('#' + idComponente).focus();
+                    }, 100);
+                }
             }
+            
         });
     }
 }
