@@ -27,30 +27,30 @@ class rid_professorController {
 
     public function __construct() {
         $this->atividade_docenteM = new atividade_docenteModel();
-        $this->tipo_atividadeM    = new tipo_atividadeModel();
+        $this->tipo_atividadeM = new tipo_atividadeModel();
         $this->historico_atividadeM = new historico_atividadeModel();
-        $this->historico_pidM     = new historico_pidModel();
+        $this->historico_pidM = new historico_pidModel();
         $this->oferta_disciplinaM = new oferta_disciplinaModel();
-        $this->periodoM           = new periodoModel();
-        $this->usuarioM           = new usuarioModel();
-        $this->atividadeM         = new atividadeModel();
-        $this->pidM               = new pidModel();
-        $this->msg                = '';
+        $this->periodoM = new periodoModel();
+        $this->usuarioM = new usuarioModel();
+        $this->atividadeM = new atividadeModel();
+        $this->pidM = new pidModel();
+        $this->msg = '';
     }
 
     public function listar() {
 
-        $tabela                   = '';
-        $id_pid                   = '';
-        $css_horas_planejadas     = '';
-        $css_horas_planejadas_on  = 'style="width:80px;text-align:center"';
+        $tabela = '';
+        $id_pid = '';
+        $css_horas_planejadas = '';
+        $css_horas_planejadas_on = 'style="width:80px;text-align:center"';
         $css_horas_planejadas_off = 'readonly style="width:80px;text-align:center;box-shadow: 0 0 0 0;border:0 none;outline: 0;background-color:inherit"';
 
         $result_usuario = $this->usuarioM->getUsuarioId($_SESSION['id_usuario']);
-        $linha_usuario  = mysqli_fetch_assoc($result_usuario);
+        $linha_usuario = mysqli_fetch_assoc($result_usuario);
 
         $result_periodo = $this->periodoM->getPeriodo($_POST['id_periodo']);
-        $linha_periodo  = mysqli_fetch_assoc($result_periodo);
+        $linha_periodo = mysqli_fetch_assoc($result_periodo);
 
         $tabela .= '<div class="panel panel-info" id="painel_dados">';
         $tabela .= '<div class="panel panel-heading">Informações sobre o preenchimento</div>';
@@ -58,23 +58,23 @@ class rid_professorController {
         $tabela .= '<div class="container-fluid">';
 
         $data_inicio = strtotime($linha_periodo['rid_inicio']);
-        $data_fim    = strtotime($linha_periodo['rid_fim']);
-        $data_atual  = strtotime(date("Y-m-d"));
+        $data_fim = strtotime($linha_periodo['rid_fim']);
+        $data_atual = strtotime(date("Y-m-d"));
 
-        $result_pid           = $this->pidM->getPidPeriodoProfessor($_POST['id_periodo'], $_SESSION['id_usuario']);
+        $result_pid = $this->pidM->getPidPeriodoProfessor($_POST['id_periodo'], $_SESSION['id_usuario']);
         $result_historico_pid = null;
-        $linha_historico_pid  = null;
+        $linha_historico_pid = null;
         $result_historico_rid = null;
-        $linha_historico_rid  = null;
+        $linha_historico_rid = null;
 
         if (mysqli_num_rows($result_pid) > 0) {
 
-            $linha_pid        = mysqli_fetch_assoc($result_pid);
-            $id_pid           = $linha_pid['id_pid'];
+            $linha_pid = mysqli_fetch_assoc($result_pid);
+            $id_pid = $linha_pid['id_pid'];
             $_SESSION['id_pid'] = $linha_pid['id_pid'];
 
             $result_historico_pid = $this->historico_pidM->getSituacao($id_pid, 'PID');
-            $linha_historico_pid  = mysqli_fetch_assoc($result_historico_pid);
+            $linha_historico_pid = mysqli_fetch_assoc($result_historico_pid);
 
             if ($linha_historico_pid['situacao'] != 'APROVADO') {
                 $tabela .= '<div class="alert alert-danger text-center">';
@@ -89,12 +89,12 @@ class rid_professorController {
                 $result_historico_rid = $this->historico_pidM->getSituacao($id_pid, 'RID');
                 if (!$result_historico_rid) {
 
-                    $campos['id_pid']   = $id_pid;
-                    $campos['etapa']    = 'RID';
+                    $campos['id_pid'] = $id_pid;
+                    $campos['etapa'] = 'RID';
                     $campos['situacao'] = 'AGUARDANDO ENVIO';
                     $this->historico_pidM->inserirRID($campos);
                     $result_historico_rid = $this->historico_pidM->getSituacao($id_pid, 'RID');
-                    $linha_historico_rid  = mysqli_fetch_assoc($result_historico_rid);
+                    $linha_historico_rid = mysqli_fetch_assoc($result_historico_rid);
                 } else {
                     $linha_historico_rid = mysqli_fetch_assoc($result_historico_rid);
                 }
@@ -132,8 +132,8 @@ class rid_professorController {
             $tabela .= '</tr>';
 
             if (($linha_historico_rid['situacao'] != 'ENVIADO') &&
-                ($linha_historico_rid['situacao'] != 'APROVADO') &&
-                ($linha_historico_rid['situacao'] != 'REPROVADO')) {
+                    ($linha_historico_rid['situacao'] != 'APROVADO') &&
+                    ($linha_historico_rid['situacao'] != 'REPROVADO')) {
 
                 if (($data_atual > $data_fim) && ($linha_historico_rid['situacao'] == 'AGUARDANDO ENVIO')) {
 
@@ -143,7 +143,6 @@ class rid_professorController {
                     $tabela .= '</table></div></div></div>';
 
                     return json_encode(array('tabela' => $tabela));
-
                 } else if ($data_atual < $data_inicio) {
 
                     $tabela .= '<tr>';
@@ -155,15 +154,13 @@ class rid_professorController {
                     $tabela .= '</table></div></div></div>';
 
                     return json_encode(array('tabela' => $tabela));
-
                 } else if (
-                    (
+                        (
                         ($data_atual >= $data_inicio) &&
                         ($data_atual <= $data_fim) &&
                         ($linha_historico_rid['situacao'] == 'AGUARDANDO ENVIO')
-                    )
-                    ||
-                    ($linha_historico_rid['situacao'] == 'RETORNADO PARA CORREÇÃO')
+                        ) ||
+                        ($linha_historico_rid['situacao'] == 'RETORNADO PARA CORREÇÃO')
                 ) {
 
                     $tabela .= '<tr>';
@@ -195,8 +192,8 @@ class rid_professorController {
         }
 
         if (
-            ($linha_historico_rid['situacao'] == "AGUARDANDO ENVIO") ||
-            ($linha_historico_rid['situacao'] == "RETORNADO PARA CORREÇÃO")
+                ($linha_historico_rid['situacao'] == "AGUARDANDO ENVIO") ||
+                ($linha_historico_rid['situacao'] == "RETORNADO PARA CORREÇÃO")
         ) {
             $tabela .= '<tr><td colspan="2" class="alert alert-warning">';
 
@@ -252,12 +249,12 @@ class rid_professorController {
             $grupos_planejadas = array();
             $grupos_executadas = array();
 
-            $ordenacao            = array('id_tipo_atividade' => 'ASC');
+            $ordenacao = array('id_tipo_atividade' => 'ASC');
             $result_tipo_atividade = $this->tipo_atividadeM->listar(array(), $ordenacao);
             while ($linha_tipo_atividade = mysqli_fetch_assoc($result_tipo_atividade)) {
 
                 $id_tipo_atividade = $linha_tipo_atividade['id_tipo_atividade'];
-                $descricao         = $linha_tipo_atividade['descricao'];
+                $descricao = $linha_tipo_atividade['descricao'];
 
                 if ($id_tipo_atividade != 2) {
 
@@ -322,8 +319,8 @@ class rid_professorController {
                     }
 
                     if (
-                        ($linha_historico_rid['situacao'] == 'AGUARDANDO ENVIO') ||
-                        ($linha_historico_rid['situacao'] == 'RETORNADO PARA CORREÇÃO')
+                            ($linha_historico_rid['situacao'] == 'AGUARDANDO ENVIO') ||
+                            ($linha_historico_rid['situacao'] == 'RETORNADO PARA CORREÇÃO')
                     ) {
                         $tabela .= '<button type="button" class="btn btn-success form-control" id="btn_adicionar_atividade" style="width: 170px;text-align:center; margin-bottom:20px;margin-right:20px" onClick="abrirModal(\'modal_formulario\', \'inserir_atividade_rid\', 0, ' . $id_tipo_atividade . ', false)">';
                         $tabela .= '<span class="glyphicon glyphicon-plus"></span> Adicionar atividade';
@@ -350,8 +347,8 @@ class rid_professorController {
                     $tabela .= '<th style="width:2%;text-align:center"></th>';
                     $tabela .= '</tr></thead><tbody>';
 
-                    $ordenacao              = array('atividade.id_tipo_atividade' => 'ASC', 'atividade.id_atividade' => 'ASC');
-                    $parametros             = array('atividade.id_tipo_atividade' => $id_tipo_atividade);
+                    $ordenacao = array('atividade.id_tipo_atividade' => 'ASC', 'atividade.id_atividade' => 'ASC');
+                    $parametros = array('atividade.id_tipo_atividade' => $id_tipo_atividade);
                     $result_atividade_docente = $this->atividade_docenteM->listar($id_pid, $parametros, $ordenacao);
 
                     $soma_grupo_executadas = 0;
@@ -359,7 +356,7 @@ class rid_professorController {
                     while ($linha_atividade_docente = mysqli_fetch_assoc($result_atividade_docente)) {
 
                         $result_historico_atividade = $this->historico_atividadeM->getSituacaoAtividade($linha_atividade_docente['id_atividade_docente'], 'RID');
-                        $linha_historico_atividade  = mysqli_fetch_assoc($result_historico_atividade);
+                        $linha_historico_atividade = mysqli_fetch_assoc($result_historico_atividade);
 
                         $tabela .= '<tr>';
                         $tabela .= '<td>' . $linha_atividade_docente['atividade'] . '</td>';
@@ -368,8 +365,8 @@ class rid_professorController {
                         $tabela .= $linha_atividade_docente['horas_planejadas'] . '</td>';
 
                         if (($linha_historico_atividade['situacao'] != 'CANCELADA') &&
-                            ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA') &&
-                            ($linha_historico_atividade['situacao'] != 'REPROVADA')) {
+                                ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA') &&
+                                ($linha_historico_atividade['situacao'] != 'REPROVADA')) {
 
                             $tabela .= '<td align="center"><input data-mask="99.99" class="form-control" ' . $css_horas_planejadas . ' type="text" name="horas_executadas_' . $linha_atividade_docente['id_atividade_docente'] . '" id="horas_executadas_' . $linha_atividade_docente['id_atividade_docente'] . '" value="' . $linha_atividade_docente['horas_executadas'] . '" onChange="atualizar_horas_executadas(' . $linha_atividade_docente['id_atividade_docente'] . ',' . $linha_atividade_docente['id_tipo_atividade'] . ')"></td>';
                         } else {
@@ -378,8 +375,8 @@ class rid_professorController {
 
                         // botões + ícones (sem alterações de lógica)
                         if (
-                            ($linha_historico_rid['situacao'] == 'AGUARDANDO ENVIO') ||
-                            ($linha_historico_rid['situacao'] == 'RETORNADO PARA CORREÇÃO')
+                                ($linha_historico_rid['situacao'] == 'AGUARDANDO ENVIO') ||
+                                ($linha_historico_rid['situacao'] == 'RETORNADO PARA CORREÇÃO')
                         ) {
 
                             if ($id_tipo_atividade != 1) {
@@ -398,7 +395,7 @@ class rid_professorController {
                             $tabela .= '<td>';
                         } else {
                             if (($linha_historico_atividade['situacao'] != 'CANCELADA') &&
-                                ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA')) {
+                                    ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA')) {
                                 $tabela .= '<td>';
                                 $tabela .= '<a title="Ver comprovante" href="#void" onclick="location.href=\'download.php?id_comprovante=' . $linha_atividade_docente['id_comprovante'] . '\'" style="color:green">';
                                 $tabela .= '<span class="glyphicon glyphicon-file"></span>';
@@ -425,7 +422,7 @@ class rid_professorController {
                         $tabela .= '</td>';
 
                         if (($linha_historico_atividade['situacao'] != 'CANCELADA') &&
-                            ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA')) {
+                                ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA')) {
                             $tabela .= '<td>';
                             if ($linha_atividade_docente['id_comprovante'] == '') {
                                 $tabela .= '<span class="glyphicon glyphicon-alert" style="color:#DAA520" title="Comprovante não anexado"></span>';
@@ -439,8 +436,8 @@ class rid_professorController {
                         $tabela .= '</tr>';
 
                         if (($linha_historico_atividade['situacao'] != 'CANCELADA') &&
-                            ($linha_historico_atividade['situacao'] != 'REPROVADA') &&
-                            ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA')) {
+                                ($linha_historico_atividade['situacao'] != 'REPROVADA') &&
+                                ($linha_historico_atividade['situacao'] != 'NÃO EXECUTADA')) {
 
                             $soma_grupo_executadas += $linha_atividade_docente['horas_executadas'];
                         }
@@ -486,8 +483,8 @@ class rid_professorController {
                         $tabela .= '<th style="width:2%;text-align:center"></th>';
                         $tabela .= '</tr></thead><tbody>';
 
-                        $ordenacao              = array('atividade.id_tipo_atividade' => 'ASC', 'atividade.id_atividade' => 'ASC');
-                        $parametros             = array('atividade.id_tipo_atividade' => 2);
+                        $ordenacao = array('atividade.id_tipo_atividade' => 'ASC', 'atividade.id_atividade' => 'ASC');
+                        $parametros = array('atividade.id_tipo_atividade' => 2);
                         $result_atividade_docente = $this->atividade_docenteM->listar($id_pid, $parametros, $ordenacao);
 
                         $soma_grupo_executadas = 0;
@@ -500,7 +497,7 @@ class rid_professorController {
                             $tabela .= '<td align="left">';
 
                             $result_historico_atividade = $this->historico_atividadeM->getSituacaoAtividade($linha_atividade_docente['id_atividade_docente'], 'RID');
-                            $linha_historico_atividade  = mysqli_fetch_assoc($result_historico_atividade);
+                            $linha_historico_atividade = mysqli_fetch_assoc($result_historico_atividade);
 
                             if ($linha_historico_atividade['situacao'] == 'AGUARDANDO AVALIAÇÃO') {
                                 $tabela .= '<span class="glyphicon glyphicon-time" style="color:orange" title="Aguardando envio para avaliação"></span>';
@@ -557,7 +554,7 @@ class rid_professorController {
                     $tabela .= '<td class="col-sm-8 text-left">' . $linha_tipo_atividade['descricao'] . '</td>';
                 }
                 $chs_planej = isset($grupos_planejadas[$linha_tipo_atividade['id_tipo_atividade']]) ? $grupos_planejadas[$linha_tipo_atividade['id_tipo_atividade']] : 0;
-                $chs_exec   = isset($grupos_executadas[$linha_tipo_atividade['id_tipo_atividade']]) ? $grupos_executadas[$linha_tipo_atividade['id_tipo_atividade']] : 0;
+                $chs_exec = isset($grupos_executadas[$linha_tipo_atividade['id_tipo_atividade']]) ? $grupos_executadas[$linha_tipo_atividade['id_tipo_atividade']] : 0;
                 $tabela .= '<td class="col-sm-2 text-center">' . $chs_planej . '</td>';
                 $tabela .= '<td class="col-sm-2 text-center">' . $chs_exec . '</td>';
                 $tabela .= '</tr>';
@@ -572,20 +569,25 @@ class rid_professorController {
             $tabela .= '</tr>';
             $tabela .= '</tbody></table>';
 
-            // hidden para regra 1,5h no envio (RID professor)
+            // Valores utilizados na regra de 1,5 hora por hora de aula executada.
             $soma_executadas_1 = isset($grupos_executadas[1]) ? $grupos_executadas[1] : 0;
+
             $soma_executadas_2 = isset($grupos_executadas[2]) ? $grupos_executadas[2] : 0;
+
             $soma_executadas_3 = isset($grupos_executadas[3]) ? $grupos_executadas[3] : 0;
+
+            $soma_executadas_4 = isset($grupos_executadas[4]) ? $grupos_executadas[4] : 0;
 
             $tabela .= '<input type="hidden" name="soma_executadas_1" id="soma_executadas_1" value="' . $soma_executadas_1 . '">';
             $tabela .= '<input type="hidden" name="soma_executadas_2" id="soma_executadas_2" value="' . $soma_executadas_2 . '">';
             $tabela .= '<input type="hidden" name="soma_executadas_3" id="soma_executadas_3" value="' . $soma_executadas_3 . '">';
+            $tabela .= '<input type="hidden" name="soma_executadas_4" id="soma_executadas_4" value="' . $soma_executadas_4 . '">';
 
             $tabela .= '<div id="msg_9" class="col-sm-12"></div>';
 
             if (
-                ($linha_historico_rid['situacao'] == 'AGUARDANDO ENVIO') ||
-                ($linha_historico_rid['situacao'] == 'RETORNADO PARA CORREÇÃO')
+                    ($linha_historico_rid['situacao'] == 'AGUARDANDO ENVIO') ||
+                    ($linha_historico_rid['situacao'] == 'RETORNADO PARA CORREÇÃO')
             ) {
                 $tabela .= '<div class="col-sm-12 text-center">';
                 $tabela .= '<button type="button" class="btn btn-success form-control" id="btn_enviar_pid" style="width: 170px;text-align:center;" onClick="enviar_rid()">';
@@ -601,7 +603,7 @@ class rid_professorController {
         $res = false;
 
         $_POST['horas_executadas'] = str_replace(',', '.', $_POST['horas_executadas']);
-        $_POST['etapa']            = 'RID';
+        $_POST['etapa'] = 'RID';
         if ($this->formularioValido()) {
 
             if ($_POST['horas_executadas'] == 0) {
@@ -624,53 +626,65 @@ class rid_professorController {
 
         $resultado = false;
 
-        // 1) Todas as horas executadas preenchidas
         if ($this->atividade_docenteM->atividadesExecutadas($_POST['id_pid']) > 0) {
+
             $this->msg .= '<div class="alert alert-danger text-center">';
             $this->msg .= 'Todos os campos Horas Executadas devem ser preenchidos!!!';
             $this->msg .= '</div>';
-
-        // 2) Todos os comprovantes anexados
         } else if ($this->atividade_docenteM->atividadesNaoComprovadas($_POST['id_pid']) > 0) {
-            $this->msg .= '<div class="alert alert-danger text-center">';
-            $this->msg .= 'Deve ser adicionado comprovantes a todas atividades!!!';
-            $this->msg .= '</div>';
 
-        // 3) Regra 1,5h (RID professor): (grupo 2 + grupo 3) <= 1,5 * grupo 1, usando horas executadas
+            $this->msg .= '<div class="alert alert-danger text-center">';
+            $this->msg .= 'Deve ser adicionado comprovante a todas atividades!!!';
+            $this->msg .= '</div>';
         } else if (
-            isset($_POST['soma_executadas_1'], $_POST['soma_executadas_2'], $_POST['soma_executadas_3']) &&
-            ($_POST['soma_executadas_1'] > 0) &&
-            (($_POST['soma_executadas_2'] + $_POST['soma_executadas_3']) > ($_POST['soma_executadas_1'] * 1.5))
+                isset(
+                        $_POST['soma_executadas_1'],
+                        $_POST['soma_executadas_2'],
+                        $_POST['soma_executadas_3'],
+                        $_POST['soma_executadas_4']
+                ) &&
+                ((float) $_POST['soma_executadas_1'] > 0) &&
+                (
+                (
+                (float) $_POST['soma_executadas_2'] +
+                (float) $_POST['soma_executadas_3'] +
+                (float) $_POST['soma_executadas_4']
+                ) >
+                ((float) $_POST['soma_executadas_1'] * 1.5)
+                )
         ) {
-            $this->msg .= '<div class="alert alert-danger text-center">';
-            $this->msg .= 'A soma das cargas horárias semanais das "Atividades de Preparação e Manutenção do Ensino" e das "Atividades de Apoio ao Ensino" não pode exceder 1,5 hora por hora de aula executada.';
-            $this->msg .= '</div>';
 
-        // 4) Tudo ok: envia RID
+            $this->msg .= '<div class="alert alert-danger text-center">';
+            $this->msg .= 'A soma das horas executadas das atividades de <b>Preparação e Manutenção do Ensino</b>, <b>Apoio ao Ensino</b> e <b>Orientação</b> não pode ultrapassar uma hora e meia para cada hora de aula executada.';
+            $this->msg .= '</div>';
         } else {
 
-            $campos['id_pid']   = $_POST['id_pid'];
-            $campos['etapa']    = 'RID';
+            $campos['id_pid'] = $_POST['id_pid'];
+            $campos['etapa'] = 'RID';
             $campos['situacao'] = 'ENVIADO';
+
             $result_historico_pid = $this->historico_pidM->inserir($campos);
 
             if ($result_historico_pid) {
                 $this->msg .= '<div class="alert alert-success text-center">RID enviado para avaliação !!!</div>';
-                $resultado  = true;
+                $resultado = true;
             } else {
                 $this->msg .= '<div class="alert alert-danger text-center">Erro ao tentar enviar RID. Entre em contato com o Administrador do Sistema !!!</div>';
             }
         }
 
-        return json_encode(array('resultado' => $resultado, 'msg' => $this->msg));
+        return json_encode(array(
+            'resultado' => $resultado,
+            'msg' => $this->msg
+        ));
     }
 
     public function carregarPeriodo() {
 
         $result_periodo_atual = $this->periodoM->getPeriodoAtual();
-        $linha_periodo_atual  = mysqli_fetch_assoc($result_periodo_atual);
+        $linha_periodo_atual = mysqli_fetch_assoc($result_periodo_atual);
 
-        $select  = '<label for="id_periodo">Periodo:</label>';
+        $select = '<label for="id_periodo">Periodo:</label>';
         $select .= '<select id="id_periodo" name="id_periodo" class="form-control" style="width:100%;">';
         $resultado_periodos = $this->periodoM->listar(array(), array('id_periodo' => 'DESC'));
 
@@ -688,7 +702,7 @@ class rid_professorController {
     }
 
     public function carregarAtividade() {
-        $select  = '<label for="id_atividade">Atividade:</label>';
+        $select = '<label for="id_atividade">Atividade:</label>';
         $select .= '<select id="id_atividade" name="id_atividade" class="form-control" style="width:100%;">';
         $resultado_periodos = $this->atividadeM->getAtividadeTipo($_POST['id_tipo_atividade']);
 
@@ -705,19 +719,19 @@ class rid_professorController {
         $valido = true;
         if (trim($_POST['id_atividade']) == '') {
             $this->msg = 'O preenchimento do campo atividade é obrigatório!';
-            $valido    = false;
+            $valido = false;
         } else if (trim($_POST['descricao']) == '') {
             $this->msg = 'O preenchimento do campo descrição é obrigatório!';
-            $valido    = false;
+            $valido = false;
         } else if (trim($_POST['horas_executadas']) == '') {
             $this->msg = 'O preenchimento do campo Horas Executadas é obrigatório, se atividade não executada o campo deve ser preenchido com valor 0 e o campo de observação deve ser preenchido com a justificativa!';
-            $valido    = false;
+            $valido = false;
         } else if (($_POST['horas_executadas'] != $_POST['horas_planejadas']) && (trim($_POST['observacao']) == '') && ($_POST['metodo'] != 'inserir_atividade_rid')) {
             $this->msg = 'Horas planejadas diferente das horas executadas, preencha o campo de observação!';
-            $valido    = false;
+            $valido = false;
         } else if (($_POST['horas_executadas'] == 0) && (trim($_POST['observacao']) == '')) {
             $this->msg = 'Horas executadas igual a 0, preencha o campo de observação para justificar a não execução da atividade!';
-            $valido    = false;
+            $valido = false;
         }
 
         if (!$valido) {
@@ -728,12 +742,12 @@ class rid_professorController {
 
     public function inserir_atividade_rid() {
 
-        $resultado            = false;
+        $resultado = false;
         $id_atividade_docente = 0;
 
         $_POST['horas_executadas'] = str_replace(',', '.', $_POST['horas_executadas']);
-        $_POST['etapa']            = 'RID';
-        $_POST['id_comprovante']   = '';
+        $_POST['etapa'] = 'RID';
+        $_POST['id_comprovante'] = '';
 
         if ($this->formularioValido()) {
 
@@ -741,7 +755,7 @@ class rid_professorController {
             if ($res) {
                 $this->msg .= '<div class="alert alert-success">Registro cadastrado com sucesso!</div>';
                 $id_atividade_docente = $res;
-                $resultado            = true;
+                $resultado = true;
             } else {
                 $this->msg .= '<div class="alert alert-danger">Erro ao inserir - Contactar o administrador do sistema</div>';
             }
@@ -755,7 +769,7 @@ class rid_professorController {
         $res = $this->atividade_docenteM->atualizar_horas_executadas($_POST);
         if ($res) {
             $this->msg .= '<div class="alert alert-success">Registro atualizado com sucesso!</div>';
-            $resultado  = true;
+            $resultado = true;
         } else {
             $this->msg .= '<div class="alert alert-danger">Erro ao atualizar - Contactar o administrador do sistema</div>';
         }
@@ -763,27 +777,27 @@ class rid_professorController {
     }
 
     public function getAtividade_docente() {
-        $res                 = $this->atividade_docenteM->getAtividade_docente($_POST['id_atividade_docente']);
-        $i                   = 0;
-        $atividade_docente   = array();
+        $res = $this->atividade_docenteM->getAtividade_docente($_POST['id_atividade_docente']);
+        $i = 0;
+        $atividade_docente = array();
         $historico_atividade = array();
         while ($linha = mysqli_fetch_assoc($res)) {
             if ($i == 0) {
                 $atividade_docente['id_atividade_docente'] = $linha['id_atividade_docente'];
-                $atividade_docente['id_pid']               = $linha['id_pid'];
-                $atividade_docente['id_atividade']         = $linha['id_atividade'];
-                $atividade_docente['descricao']            = $linha['descricao'];
-                $atividade_docente['horas_planejadas']     = $linha['horas_planejadas'];
-                $atividade_docente['horas_executadas']     = $linha['horas_executadas'];
-                $atividade_docente['id_comprovante']       = $linha['id_comprovante'];
+                $atividade_docente['id_pid'] = $linha['id_pid'];
+                $atividade_docente['id_atividade'] = $linha['id_atividade'];
+                $atividade_docente['descricao'] = $linha['descricao'];
+                $atividade_docente['horas_planejadas'] = $linha['horas_planejadas'];
+                $atividade_docente['horas_executadas'] = $linha['horas_executadas'];
+                $atividade_docente['id_comprovante'] = $linha['id_comprovante'];
             }
-            $situacao                           = array();
+            $situacao = array();
             $situacao['id_historico_atividade'] = $linha['id_historico_atividade'];
-            $situacao['etapa']                  = $linha['etapa'];
-            $situacao['situacao']               = $linha['situacao'];
-            $situacao['observacao']             = $linha['observacao'];
-            $situacao['data_situacao']          = $linha['data_situacao'];
-            $situacao['id_usuario_avaliador']   = $linha['id_usuario_avaliador'];
+            $situacao['etapa'] = $linha['etapa'];
+            $situacao['situacao'] = $linha['situacao'];
+            $situacao['observacao'] = $linha['observacao'];
+            $situacao['data_situacao'] = $linha['data_situacao'];
+            $situacao['id_usuario_avaliador'] = $linha['id_usuario_avaliador'];
             $historico_atividade[$linha['id_historico_atividade']] = $situacao;
             $i++;
         }
@@ -791,10 +805,6 @@ class rid_professorController {
         return json_encode($atividade_docente);
     }
 
-    public function imprimir_rid() {
-        // mantido igual ao seu código original
-        // (não alterei lógica, só omiti aqui por tamanho)
-    }
 }
 
 // Callback
