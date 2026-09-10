@@ -38,8 +38,10 @@ if (isset($_POST['usuario'])) {
         $_SESSION['email'] = $linha_usuario['email'];
         $_SESSION['diretorio_base'] = realpath('./');
         $_SESSION['diretorio_base'] = str_replace('\\', '/', realpath('./'));
-        if (($_SESSION['perfil'] == 'Coordenador de Ensino') || ($_SESSION['perfil'] == 'Coordenador de Curso')) {
+        if ($_SESSION['perfil'] == 'Coordenador de Ensino') {
             $_SESSION['topo'] = 'topo_ensino.php';
+        }else if ($_SESSION['perfil'] == 'Coordenador de Curso'){
+            $_SESSION['topo'] = 'topo_coordenador.php';
         } else if ($_SESSION['perfil'] == 'Registro Escolar') {
             $_SESSION['topo'] = 'topo_registro_escolar.php';
         } else if ($_SESSION['perfil'] == 'NAP') {

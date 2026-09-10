@@ -20,7 +20,16 @@ class horarioController {
         $select = '<label for="id_periodo">Periodo:</label>';
         $select .= '<select id="id_periodo" name="id_periodo" class="form-control">';
         $periodoM = new periodoModel();
-        $resultado_periodos = $periodoM->listar(array(), array('id_periodo' => 'DESC'));
+        
+        $criterios = array();
+        if ($_SESSION['perfil'] == 'Professor') {
+            $criterios['publicado'] = 1;
+        }
+        if ($_SESSION['perfil'] == 'Coordenador de Curso') {
+            $criterios['publicado'] = 1;
+        }
+        
+        $resultado_periodos = $periodoM->listar(array(), array('id_periodo'=>'DESC'),array(),$criterios);        
 
         while ($linha = mysqli_fetch_assoc($resultado_periodos)) {
             $select .= "<option value='{$linha['id_periodo']}'>";

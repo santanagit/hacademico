@@ -143,7 +143,13 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
                                     <label for="publicado" style="display: inline">Publicado:</label>
                                     <input type="checkbox" class="form-control" style="margin-top: 0px; padding-top: 0px;" name="publicado" id="publicado">
                                 </div>   
-                            </div>   
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group form-inline">
+                                    <label for="publicado_coordenador" style="display: inline">Publicado Coordenador:</label>
+                                    <input type="checkbox" class="form-control" style="margin-top: 0px; padding-top: 0px;" name="publicado_coordenador" id="publicado_coordenador">
+                                </div>   
+                            </div>                             
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
                                 <button type="button" class="btn btn-success" id="btn_gravar">Gravar</button>

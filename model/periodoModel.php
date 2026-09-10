@@ -11,7 +11,7 @@ class periodoModel {
         $this->bd = $conexao->getConexao();
     }
 
-    public function listar($parametros = array(), $ordenacao = array(), $limit = array()) {
+    public function listar($parametros = array(), $ordenacao = array(), $limit = array(), $criterios = array()) {
 
         $sql = "SELECT
                     id_periodo,
@@ -23,20 +23,41 @@ class periodoModel {
                     DATE_FORMAT(pid_fim,'%d/%m/%Y') as pid_fim,
                     DATE_FORMAT(rid_inicio,'%d/%m/%Y') as rid_inicio,
                     DATE_FORMAT(rid_fim,'%d/%m/%Y') as rid_fim,
-                    publicado
+                    publicado,
+                    publicado_coordenador
                 FROM periodo ";
 
+        if ((count($parametros) > 0) || (count($criterios) > 0)) {
+            $sql .= ' WHERE ';
+        }
+        
         if (count($parametros) > 0) {
             $i = 0;
-            $sql .= ' WHERE ';
+            $sql .= "( ";
             foreach ($parametros as $key => $value) {
                 if ($i > 0)
                     $sql .= " OR ";
                 $sql .= "$key like '%$value%'";
                 $i++;
             }
+            $sql .= ") ";
+            if (count($criterios) > 0) {
+                $sql .= " && ";
+            }
         }
 
+        if (count($criterios) > 0) {
+            $i = 0;
+            $sql .= "( ";
+            foreach ($criterios as $key => $value) {
+                if ($i > 0)
+                    $sql .= " AND ";
+                $sql .= "$key = '$value'";
+                $i++;
+            }
+            $sql .= ") ";
+        }
+        
         if (count($ordenacao) > 0) {
             $i = 0;
             $sql .= ' ORDER BY ';
@@ -51,7 +72,7 @@ class periodoModel {
         if (count($limit) > 0) {
             $sql .= " LIMIT {$limit['inicio']},{$limit['quantidade']}";
         }
-
+        //echo $sql;
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
         $result = $stmt->get_result();
@@ -59,9 +80,9 @@ class periodoModel {
     }
 
     public function inserir($campos) {
-        $sql = "INSERT INTO periodo(ano,semestre,data_inicio,data_fim,pid_inicio,pid_fim,rid_inicio,rid_fim,publicado) VALUES (?,?,?,?,?,?,?,?,?)";
+        $sql = "INSERT INTO periodo(ano,semestre,data_inicio,data_fim,pid_inicio,pid_fim,rid_inicio,rid_fim,publicado,publicado_coordenador) VALUES (?,?,?,?,?,?,?,?,?,?)";
         $stmt = $this->bd->prepare($sql);
-        $stmt->bind_param("iissssssi",
+        $stmt->bind_param("iissssssii",
                 $campos['ano'],
                 $campos['semestre'],
                 $campos['data_inicio'],
@@ -70,7 +91,8 @@ class periodoModel {
                 $campos['pid_fim'],
                 $campos['rid_inicio'],
                 $campos['rid_fim'],
-                $campos['publicado']
+                $campos['publicado'],
+                $campos['publicado_coordenador']
         );
         $result = $stmt->execute() or die($this->bd->error);
         if (!$result) {
@@ -91,10 +113,11 @@ class periodoModel {
                 . "pid_fim = ? ,"
                 . "rid_inicio = ? ,"
                 . "rid_fim = ? ,"
-                . "publicado = ? "
+                . "publicado = ? ,"
+                . "publicado_coordenador = ? "
                 . "WHERE id_periodo = ?";
         $stmt = $this->bd->prepare($sql);
-        $stmt->bind_param("iissssssii",
+        $stmt->bind_param("iissssssiii",
                 $campos['ano'],
                 $campos['semestre'],
                 $campos['data_inicio'],
@@ -104,6 +127,7 @@ class periodoModel {
                 $campos['rid_inicio'],
                 $campos['rid_fim'],
                 $campos['publicado'],
+                $campos['publicado_coordenador'],
                 $campos['id_periodo']
         );
         $result = $stmt->execute() or die($this->bd->error);
@@ -135,7 +159,8 @@ class periodoModel {
                     DATE_FORMAT(pid_fim,'%d/%m/%Y') as pid_fim_formatado,
                     DATE_FORMAT(rid_inicio,'%d/%m/%Y') as rid_inicio_formatado,
                     DATE_FORMAT(rid_fim,'%d/%m/%Y') as rid_fim_formatado,
-                    publicado
+                    publicado,
+                    publicado_coordenador
                 FROM 
                     periodo 
                 WHERE 
@@ -163,7 +188,8 @@ class periodoModel {
                     DATE_FORMAT(pid_fim,'%d/%m/%Y') as pid_fim_formatado,
                     DATE_FORMAT(rid_inicio,'%d/%m/%Y') as rid_inicio_formatado,
                     DATE_FORMAT(rid_fim,'%d/%m/%Y') as rid_fim_formatado,
-                    publicado
+                    publicado,
+                    publicado_coordenador
                 FROM 
                     periodo 
                 ORDER BY
@@ -194,7 +220,8 @@ class periodoModel {
                     DATE_FORMAT(pid_fim,'%d/%m/%Y') as pid_fim_formatado,
                     DATE_FORMAT(rid_inicio,'%d/%m/%Y') as rid_inicio_formatado,
                     DATE_FORMAT(rid_fim,'%d/%m/%Y') as rid_fim_formatado,
-                    publicado
+                    publicado,
+                    publicado_coordenador
                 FROM periodo WHERE id_periodo = $id_periodo";
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);

@@ -50,16 +50,17 @@ class periodoController {
             $tabela .= '<table class="table table-striped table-hover table-condensed">';
             $tabela .= '<thead>';
             $tabela .= '<tr>';
-            $tabela .= '<th width="2%">ID</th>';
+            $tabela .= '<th width="6%">ID</th>';
             $tabela .= '<th width="10%">Ano</th>';
             $tabela .= '<th width="10%">Semestre</th>';
-            $tabela .= '<th width="12%">Data início</th>';
-            $tabela .= '<th width="12%">Data fim</th>';
-            $tabela .= '<th width="11%">PID início</th>';
-            $tabela .= '<th width="11%">PID fim</th>';
-            $tabela .= '<th width="11%">RID início</th>';
-            $tabela .= '<th width="11%">RID fim</th>';
-            $tabela .= '<th width="6%" style="text-align:center">Publicado</th>';
+            $tabela .= '<th width="10%">Data início</th>';
+            $tabela .= '<th width="10%">Data fim</th>';
+            $tabela .= '<th width="10%">PID início</th>';
+            $tabela .= '<th width="10%">PID fim</th>';
+            $tabela .= '<th width="10%">RID início</th>';
+            $tabela .= '<th width="10%">RID fim</th>';
+            $tabela .= '<th width="5%" style="text-align:center">Publicado</th>';
+            $tabela .= '<th width="5%" style="text-align:center">Publicado<br>Coordenação</th>';
             
             $tabela .= '<th width="2%">&nbsp;</th>';
             $tabela .= '<th width="2%">&nbsp;</th>';
@@ -83,8 +84,11 @@ class periodoController {
                 } else {
                     $tabela .= '<td align="center">Não</td>';
                 }
-                
-                
+                if ($linha['publicado_coordenador']) {
+                    $tabela .= '<td align="center">Sim</td>';
+                } else {
+                    $tabela .= '<td align="center">Não</td>';
+                }
                 
                 $tabela .= '<td>';
                 $tabela .= '<a href="#void" onclick="abrirModal('."'modal_formulario','atualizar',".$linha['id_periodo'].')" style="color:green">';
@@ -144,6 +148,12 @@ class periodoController {
         } else {
             $_POST['publicado'] = 1;
         }           
+
+        if (!isset($_POST['publicado_coordenador'])) {
+            $_POST['publicado_coordenador'] = 0;
+        } else {
+            $_POST['publicado_coordenador'] = 1;
+        }   
         
         if ($this->formularioValido()) {
             
@@ -205,8 +215,13 @@ class periodoController {
             $_POST['publicado'] = 0;
         } else {
             $_POST['publicado'] = 1;
-        }        
+        }  
         
+        if (!isset($_POST['publicado_coordenador'])) {
+            $_POST['publicado_coordenador'] = 0;
+        } else {
+            $_POST['publicado_coordenador'] = 1;
+        }
         
         if ($this->formularioValido()) {
             

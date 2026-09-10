@@ -240,11 +240,16 @@ class horario_professorController {
         $periodoM = new periodoModel();
         $resultado_periodos = null;
         
+        $criterios = array();
         if ($_SESSION['perfil'] == 'Professor') {
-            $resultado_periodos = $periodoM->listar(array("publicado"=>1), array('id_periodo'=>'DESC'));
-        } else {
-            $resultado_periodos = $periodoM->listar(array(), array('id_periodo'=>'DESC'));
+            $criterios['publicado'] = 1;
         }
+        if ($_SESSION['perfil'] == 'Coordenador de Curso') {
+            $criterios['publicado'] = 1;
+        }
+        
+        $resultado_periodos = $periodoM->listar(array(), array('id_periodo'=>'DESC'),array(),$criterios);
+
         while ($linha = mysqli_fetch_assoc($resultado_periodos)) {
             $select .= "<option value='{$linha['id_periodo']}'>";
             $select .= $linha['ano'].'/'.$linha['semestre'];
