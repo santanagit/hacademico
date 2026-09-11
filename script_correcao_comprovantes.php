@@ -25,8 +25,8 @@ $sql = "
             INNER JOIN comprovante
                 ON atividade_docente.id_comprovante = comprovante.id_comprovante
         WHERE
-            atividade_docente.descricao LIKE '%colegiado%' AND
-            (atividade_docente.descricao LIKE '%TGA%' OR atividade_docente.descricao LIKE '%Gestão Ambiental%')
+            atividade_docente.descricao LIKE '%colegiado%' AND atividade_docente.descricao LIKE '%Meio Ambiente%'
+            #atividade_docente.descricao LIKE '%colegiado%' AND (atividade_docente.descricao LIKE '%TGA%' OR atividade_docente.descricao LIKE '%Gestão Ambiental%')
             AND (
                 -- Comprovante terminou antes do início do período
                 comprovante.fim_vigencia < periodo.data_inicio
@@ -42,8 +42,9 @@ $sql = "
             atividade_docente.descricao;    
 ";
 
-$result = mysqli_query($mysql, $sql);
+$updates = array();
 
+$result = mysqli_query($mysql, $sql);
 if (mysqli_num_rows($result) > 0) {
     $tabela = '<table align="center" border="1">';
     $tabela .= '<tr>';
@@ -85,15 +86,14 @@ if (mysqli_num_rows($result) > 0) {
                     comprovante.descricao
                 FROM comprovante
                 WHERE
-                    comprovante.descricao LIKE '%colegiado%'
-                    AND (
-                        comprovante.descricao LIKE '%TGA%'
-                        OR comprovante.descricao LIKE '%Gestão Ambiental%'
+                    (
+                        comprovante.descricao LIKE '%colegiado%' AND comprovante.descricao LIKE '%Meio Ambiente%'
+                        #comprovante.descricao LIKE '%colegiado%' AND (comprovante.descricao LIKE '%TGA%' OR comprovante.descricao LIKE '%Gestão Ambiental%')
                     )
                     AND '{$linha['data_inicio']}' >= comprovante.inicio_vigencia
                     AND '{$linha['data_inicio']}' <= comprovante.fim_vigencia                           
 ";
-        die("<pre>".$sql2);
+        //die("<pre>".$sql2);
         $result2 = mysqli_query($mysql, $sql2);
         $registros = mysqli_num_rows($result2);
         if ($registros == 0) {
@@ -102,6 +102,10 @@ if (mysqli_num_rows($result) > 0) {
             $tabela .= '<td>';
             $tabela .= '<table align="center" border="1">';
             while ($linha2 = mysqli_fetch_assoc($result2)) {
+                
+                $update = "UPDATE atividade_docente SET id_comprovante = {$linha2['id_comprovante']} WHERE id_atividade_docente = {$linha['id_atividade_docente']}";
+                $updates[] = $update;
+                
                 $tabela .= '<tr>';
                 $tabela .= '<td>'.$linha2['id_comprovante'].'</td>';
                 $tabela .= '<td>'.$linha2['inicio_vigencia'].'</td>';
@@ -118,4 +122,8 @@ if (mysqli_num_rows($result) > 0) {
     $tabela .= '</table>';
 
     echo $tabela;
+    
+    foreach ($updates as $valor) {
+        echo $valor.";<br>";
+    }
 }
