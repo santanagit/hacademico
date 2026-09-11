@@ -135,7 +135,7 @@ function listar() {
         dataType: 'html',
         data: dados
     }).done(function (resposta) {
-        console.log('Resposta recebida:', resposta);
+        //console.log('Resposta recebida:', resposta);
         var json = JSON.parse(resposta);
         $('#tabela').html(json.tabela);
         $('#registros').val(json.registros);
