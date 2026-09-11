@@ -65,12 +65,6 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
                                 </span>
                             </nav>
                             
-
-
-
-
-     
-
                             <div id="tabela"></div>
 
                             <nav class="nav navbar-form" style="padding-left: 0px">

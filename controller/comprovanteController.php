@@ -91,13 +91,7 @@ class comprovanteController {
                 $tabela .= '<a href="download.php?id_comprovante='.$linha['id_comprovante'].'" target="_blank" style="color:blue">';
                 $tabela .= '<span class="glyphicon glyphicon-download-alt"></span>';
                 $tabela .= '</a>';
-                $tabela .= '</td>';                
-                
-                $tabela .= '<td>';
-                $tabela .= '<a href="#void" onclick="'."location.href='comprovante_dados.php?id_comprovante={$linha['id_comprovante']}'".'" style="color:green">';
-                $tabela .= '<span class="glyphicon glyphicon-edit"></span>';
-                $tabela .= '</a>';
-                $tabela .= '</td>';
+                $tabela .= '</td>';                                
 
                 $tabela .= '<td>';
                 $tabela .= '<a href="#void" onclick="abrirModal(' . "'modal_confirmacao','deletar'," . $linha['id_comprovante'] . ')" style="color:red">';
