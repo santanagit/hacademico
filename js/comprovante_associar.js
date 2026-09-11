@@ -8,13 +8,13 @@ $(document).ready(function () {
     var id_comprovante = parametros.get('id_comprovante');
     var criterios = parametros.getAll('criterios[]');
     $('#id_comprovante').val(id_comprovante);
-    console.log('id_comprovante:', id_comprovante);
-    console.log('criterios:', criterios);
+    //console.log('id_comprovante:', id_comprovante);
+    //console.log('criterios:', criterios);
     
-    listar();
     carregarComponente('carregarAtividade', 'div_atividade');
     carregarComponente('carregarProfessor', 'div_professor');
-    carregarComponente('carregarComprovante', 'div_comprovante');
+    carregarComprovante();
+    listar();
    
     $('#horas').mask('9,9');
     
@@ -77,9 +77,25 @@ function carregarComponente(metodo, id) {
         data: dados
     }).done(function (resposta) {
         var json = JSON.parse(resposta);
-        $('#' + id).html(json.select);
-        $('#myframe').attr('src', json.url);
+        $('#'+id).html(json.select);
     });
+}
+
+function carregarComprovante() {
+    $('#metodo').val('carregarComprovante');
+    var dados = $('#formulario').serialize();
+    $.ajax({
+        url: 'controller/' + classe + '.php',
+        type: 'post',
+        dataType: 'html',
+        data: dados 
+    }).done(function (resposta) {
+        var json = JSON.parse(resposta);
+        $('#descricao').val(json.descricao);
+        $('#inicio_vigencia').val(json.inicio_vigencia);
+        $('#fim_vigencia').val(json.fim_vigencia);       
+        $('#myframe').attr('src', json.url);
+    });        
 }
 
 function abrirModal(modal, metodo, id_comprovante_docente) {
@@ -111,6 +127,30 @@ function listar() {
     }).done(function (resposta) {
         var json = JSON.parse(resposta);
         $('#tabela').html(json.tabela);
+    });
+}
+
+function atualizar_comprovante() {
+    $('#metodo').val('atualizar_comprovante');
+    const formulario = document.getElementById('formulario');
+    const dados = new FormData(formulario);
+    $.ajax({
+        url: 'controller/' + classe + '.php',
+        type: 'post',
+        processData: false,
+        contentType: false,        
+        dataType: 'html',
+        data: dados
+    }).done(function (resposta) {
+        var json = JSON.parse(resposta);
+        $('#msg').html(json.msg);
+        if (json.resultado == false) {
+            $('#descricao').focus();
+        }
+        
+        $('#myframe').attr('src', json.url);
+        
+        //console.log('Resposta atualizar comprovante: '+resposta);
     });
 }
 

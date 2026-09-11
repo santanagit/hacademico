@@ -1,6 +1,6 @@
 <?php
 require_once('controller/sessao.php');
-sessao::validar(array('Coordenador de Ensino','Coordenador de Curso'));
+sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -18,7 +18,7 @@ sessao::validar(array('Coordenador de Ensino','Coordenador de Curso'));
         <!-- Jquery and Bootstrap Script files -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        
+
         <!-- Others JS Files -->
         <script src="js/comprovante_associar.js"></script>
         <script src="js/jquery.mask.min.js"></script>
@@ -30,7 +30,7 @@ sessao::validar(array('Coordenador de Ensino','Coordenador de Curso'));
         <form id="formulario">
 
             <input type="hidden" name="metodo" id="metodo">
-            
+
             <!-- Alterar aqui o ID da tabela -->
             <input type="hidden" name="id_comprovante_docente" id="id_comprovante_docente">
             <input type="hidden" name="id_comprovante" id="id_comprovante">
@@ -40,31 +40,59 @@ sessao::validar(array('Coordenador de Ensino','Coordenador de Curso'));
                     <div class="panel panel-default">
                         <div class="panel-heading text-center">
                             <!-- Alterar título do painel -->
-                            Associar comprovante a um professor e a uma atividade
+                            Comprovante e professores associados
                         </div>
                         <div class="panel-body">    
 
-                            <nav class="nav navbar-form" style="padding-left: 0px">
-                                <span class="navbar-left">
-                                    <button type="button" class="btn btn-success form-control" id="btn_adicionar" >
-                                        <span class="glyphicon glyphicon-plus"></span> Adicionar
-                                    </button>
-                                </span>
-                                <span class="navbar-left" style="margin-left: 10px">
-                                    <button type="button" class="btn btn-danger form-control" id="btn_voltar" onclick="voltarParaComprovante()">
-                                        <span class="glyphicon glyphicon-arrow-left" style="padding-right: 5px"></span> Voltar
-                                    </button>
-                                </span>                                
-                            </nav>
-                            
                             <div class="col-md-12" id="msg"></div>
-                                                      
-                            <div class="col-md-12" id="div_comprovante"></div>                            
+
+                            <div class="col-md-12" id="div_comprovante">
+                                <div class="form-group col-md-12">
+                                    <label for="descricao">Descrição:</label>
+                                    <input type="text" class="form-control" name="descricao" id="descricao" required>
+                                </div>                            
+                                <div class="form-group col-md-4">
+                                    <label for="inicio_vigencia">Início da vigência:</label>
+                                    <input type="date" class="form-control" name="inicio_vigencia" id="inicio_vigencia">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="fim_vigencia">Fim da vigência</label>
+                                    <input type="date" class="form-control" name="fim_vigencia" id="fim_vigencia">
+                                </div> 
+                                <div class="form-group col-md-4"">
+                                    <label for="arquivo">Documento(PDF):</label>
+                                    <input type="file" accept=".pdf" class="form-control" name="arquivo" id="arquivo">
+                                    <div style="color:red; font-style: italic; font-size: 12px; font-weight: bold">
+                                        *Deixe em BRANCO para MANTER o mesmo arquivo
+                                    </div>
+                                </div> 
+
+                                <nav class="nav navbar-form" style="padding-bottom: 20px">
+                                    <span class="navbar-left">
+                                        <button type="button" class="btn btn-success form-control" id="btn_atualizar" onclick="atualizar_comprovante()">
+                                            <span class="glyphicon glyphicon-plus"></span> Atualizar comprovante
+                                        </button>
+                                    </span>
+                                    <span class="navbar-left" style="margin-left: 10px">
+                                        <button type="button" class="btn btn-danger form-control" id="btn_voltar" onclick="voltarParaComprovante()">
+                                            <span class="glyphicon glyphicon-arrow-left" style="padding-right: 5px"></span> Voltar
+                                        </button>  
+                                    </span>                                
+                                </nav>                                
+
+                            </div> 
+
                             <div class="col-md-6" d="div_arquivo">
                                 <iframe id="myframe" src="" width="100%" height="500" frameborder="0" style="border:0"></iframe>
                             </div>
-                            
-                            <div class="col-md-6" id="tabela"></div>
+
+                            <div class="col-md-6" >
+                                <div class="alert alert-info text-center">Professores associados ao comprovante</div>
+                                <button type="button" class="btn btn-success form-control" id="btn_adicionar" style="width: 180px">
+                                    <span class="glyphicon glyphicon-plus"></span> Adicionar Professor
+                                </button>
+                                <div id="tabela"></div>
+                            </div>
 
                         </div>
                     </div>       

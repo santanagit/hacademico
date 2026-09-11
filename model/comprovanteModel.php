@@ -30,7 +30,9 @@ class comprovanteModel {
                     id_comprovante,
                     descricao,
                     DATE_FORMAT(inicio_vigencia,'%d/%m/%Y') AS inicio_vigencia,
-                    DATE_FORMAT(fim_vigencia,'%d/%m/%Y') AS fim_vigencia 
+                    DATE_FORMAT(fim_vigencia,'%d/%m/%Y') AS fim_vigencia,
+                    inicio_vigencia AS inicio,
+                    fim_vigencia AS fim
                 FROM 
                     comprovante WHERE id_comprovante = ?";
         $stmt = $this->bd->prepare($sql);
@@ -368,6 +370,41 @@ class comprovanteModel {
         }         
        
     }
+    
+    public function atualizar2($campos) {
+
+        $result = false;
+        $sql = "UPDATE comprovante SET 
+                    descricao = ?, 
+                    inicio_vigencia = ?, 
+                    fim_vigencia = ?
+                WHERE 
+                    id_comprovante = ?";
+
+        $stmt = $this->bd->prepare($sql);
+        $stmt->bind_param("sssi",
+                $campos['descricao'],
+                $campos['inicio_vigencia'],
+                $campos['fim_vigencia'],
+                $campos['id_comprovante']
+        );
+        $result = $stmt->execute() or die($this->bd->error);
+
+        if ($_FILES['arquivo']['error'] == 0) {
+            
+            unlink($_SESSION['diretorio_base'] . '/comprovantes/comprovante_'.$campos['id_comprovante'].'.pdf');
+            $arquivo_temp = $_FILES['arquivo']['tmp_name'];
+            if (move_uploaded_file($_FILES["arquivo"]["tmp_name"], $_SESSION['diretorio_base'] . '/comprovantes/comprovante_'.$campos['id_comprovante'].'.pdf')) {
+                return $result;
+            } else {
+                return false;
+            }         
+        
+        } else {
+            return $result;
+        }
+       
+    }    
 
     public function deletar($id_comprovante) {
         $sql = "DELETE FROM comprovante WHERE id_comprovante = $id_comprovante";

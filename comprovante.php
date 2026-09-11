@@ -53,7 +53,7 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
                                 </span>
                                 <span class="navbar-right">
                                     <div class="checkbox" style="margin: 10px">
-                                        <label><input type="checkbox" id="vigencia" name="criterios[]" value="vigencia"> Possui vigência </label>
+                                        <label><input type="checkbox" id="vigencia" name="criterios[]" value="vigencia" checked> Possui vigência </label>
                                     </div>
                                     <div class="checkbox" style="margin: 10px">
                                         <label><input type="checkbox" id="grupo" name="criterios[]" value="grupo"> Comprovante associado a mais de um servidor </label>

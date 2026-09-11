@@ -112,6 +112,41 @@ class comprovante_associarController {
         return json_encode($resposta);
     }
 
+    public function atualizar_comprovante() {
+        $resultado = false;
+        
+        if (trim($_POST['descricao']) != '') {    
+            $res = $this->comprovanteM->atualizar2($_POST);
+            if ($res) {
+                $this->msg = '<div class="alert alert-success">';
+                $this->msg .= 'Comprovante atualizado com sucesso!';
+                $this->msg .= '</div>';
+                $resultado = true;
+            } else {
+                $this->msg .= '<div class="alert alert-danger">';
+                $this->msg .= 'Erro ao inserir - Contactar o administrador do sistema';
+                $this->msg .= '</div>';
+            }
+
+            $resposta = array(
+                'resultado' => $resultado,
+                'msg' => $this->msg
+            );
+        } else {
+            $this->msg .= '<div class="alert alert-danger">';
+            $this->msg .= 'Preencha o campo descricação';
+            $this->msg .= '</div>';            
+            $resposta = array(
+                'resultado' => $resultado,
+                'msg' => $this->msg
+            );
+            
+        }
+        
+        $resposta['url'] = 'http://' . $_SERVER['HTTP_HOST'] . '/hacademico/comprovantes/comprovante_' . $_POST['id_comprovante'] . '.pdf?nc=' . random_int(1, 10000);
+        return json_encode($resposta);
+    }    
+    
     public function deletar() {
         $resultado = false;
 
@@ -150,15 +185,14 @@ class comprovante_associarController {
     public function carregarComprovante() {
         $result_comprovante = $this->comprovanteM->getComprovante($_POST['id_comprovante']);
         $linha_comprovante = mysqli_fetch_assoc($result_comprovante);
-        $select = "<div class='alert alert-info'>";
-        $select .= "<div style='padding:5px;font-weight:bold'>Comprovante:</div>";
-        $select .= "<ul>";
-        $select .= "<li> ID: {$linha_comprovante['id_comprovante']} </li>";
-        $select .= "<li> Descrição: {$linha_comprovante['descricao']} </li>";
-        $select .= "<li> Vigência: {$linha_comprovante['inicio_vigencia']} à {$linha_comprovante['fim_vigencia']} </li>";
-        $select .= "</ul>";
+
         $url = 'http://' . $_SERVER['HTTP_HOST'] . '/hacademico/comprovantes/comprovante_' . $linha_comprovante['id_comprovante'] . '.pdf?nc=' . random_int(1, 10000);
-        $resposta = array('select' => $select, 'url' => $url);
+        $resposta = array(
+            'id_comprovante' => $linha_comprovante['id_comprovante'],
+            'descricao'=>$linha_comprovante['descricao'],
+            'inicio_vigencia'=>$linha_comprovante['inicio'], 
+            'fim_vigencia'=>$linha_comprovante['fim'], 
+            'url' => $url);
         return json_encode($resposta);
     } 
     
