@@ -32,19 +32,14 @@ $sql = "
             #atividade_docente.descricao LIKE '%NDE%' AND (atividade_docente.descricao LIKE '%Analise%' OR atividade_docente.descricao LIKE '%ADS%')
             #atividade_docente.descricao LIKE '%NDE%' AND (atividade_docente.descricao LIKE '%TGA%' OR atividade_docente.descricao LIKE '%Gestão Ambiental%')
             #atividade_docente.descricao LIKE '%colegiado%' AND atividade_docente.descricao LIKE '%Administração%'
-            #atividade_docente.descricao LIKE '%colegiado%' AND (atividade_docente.descricao LIKE '%Analise%' OR atividade_docente.descricao LIKE '%ADS%')
+            #atividade_docente.descricao LIKE '%colegiado%' AND (atividade_docente.descricao LIKE '%Sistemas%' OR atividade_docente.descricao LIKE '%ADS%')
             #atividade_docente.descricao LIKE '%colegiado%' AND atividade_docente.descricao LIKE '%Informática%'
             #atividade_docente.descricao LIKE '%colegiado%' AND atividade_docente.descricao LIKE '%Meio Ambiente%'
             #atividade_docente.descricao LIKE '%colegiado%' AND (atividade_docente.descricao LIKE '%TGA%' OR atividade_docente.descricao LIKE '%Gestão Ambiental%')
             #AND 
             #(
-                -- Comprovante terminou antes do início do período
+                comprovante.inicio_vigencia > periodo.data_fim ||
                 comprovante.fim_vigencia < periodo.data_inicio
-
-                OR
-
-                -- Comprovante começou depois do fim do período
-                comprovante.inicio_vigencia > periodo.data_fim
             #)
         ORDER BY
             periodo.ano,
@@ -102,14 +97,15 @@ if (mysqli_num_rows($result) > 0) {
                         #comprovante.descricao LIKE '%NDE%' AND (comprovante.descricao LIKE '%ADS%' OR comprovante.descricao LIKE '%Analise%')
                         #comprovante.descricao LIKE '%NDE%' AND (comprovante.descricao LIKE '%TGA%' OR comprovante.descricao LIKE '%Gestão%')
                         #comprovante.descricao LIKE '%colegiado%' AND comprovante.descricao LIKE '%administração%'
-                        #comprovante.descricao LIKE '%colegiado%' AND (comprovante.descricao LIKE '%ADS%' OR comprovante.descricao LIKE '%Analise%')
+                        #comprovante.descricao LIKE '%colegiado%' AND (comprovante.descricao LIKE '%ADS%' OR comprovante.descricao LIKE '%Sistemas%')
                         #comprovante.descricao LIKE '%colegiado%' AND comprovante.descricao LIKE '%Informática%'
                         #comprovante.descricao LIKE '%colegiado%' AND comprovante.descricao LIKE '%Meio Ambiente%'
                         #comprovante.descricao LIKE '%colegiado%' AND (comprovante.descricao LIKE '%TGA%' OR comprovante.descricao LIKE '%Gestão Ambiental%')
-                    )
+                    #)
                     #AND 
-                    '{$linha['data_inicio']}' >= comprovante.inicio_vigencia
-                    AND '{$linha['data_inicio']}' <= comprovante.fim_vigencia                           
+                    ('{$linha['data_inicio']}' >= comprovante.inicio_vigencia || '{$linha['data_fim']}' >= comprovante.inicio_vigencia)
+                    AND '{$linha['data_inicio']}' <= comprovante.fim_vigencia  
+                    #AND id_comprovante <> {$linha['id_comprovante']}
 ";
         //die("<pre>".$sql2);
         $result2 = mysqli_query($mysql, $sql2);
