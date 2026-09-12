@@ -8,6 +8,7 @@ $sql = "
         SELECT
             atividade_docente.id_atividade_docente,
             pid.id_pid,
+            usuario.nome,
             periodo.id_periodo,
             periodo.ano,
             periodo.semestre,
@@ -24,10 +25,19 @@ $sql = "
                 ON pid.id_periodo = periodo.id_periodo
             INNER JOIN comprovante
                 ON atividade_docente.id_comprovante = comprovante.id_comprovante
+            INNER JOIN usuario
+                ON usuario.id_usuario = pid.id_usuario
         WHERE
-            atividade_docente.descricao LIKE '%colegiado%' AND atividade_docente.descricao LIKE '%Meio Ambiente%'
+            #atividade_docente.descricao LIKE '%NDE%' AND (atividade_docente.descricao LIKE '%TGA%' OR atividade_docente.descricao LIKE '%Gestão%')
+            #atividade_docente.descricao LIKE '%NDE%' AND (atividade_docente.descricao LIKE '%Analise%' OR atividade_docente.descricao LIKE '%ADS%')
+            #atividade_docente.descricao LIKE '%NDE%' AND (atividade_docente.descricao LIKE '%TGA%' OR atividade_docente.descricao LIKE '%Gestão Ambiental%')
+            #atividade_docente.descricao LIKE '%colegiado%' AND atividade_docente.descricao LIKE '%Administração%'
+            #atividade_docente.descricao LIKE '%colegiado%' AND (atividade_docente.descricao LIKE '%Analise%' OR atividade_docente.descricao LIKE '%ADS%')
+            #atividade_docente.descricao LIKE '%colegiado%' AND atividade_docente.descricao LIKE '%Informática%'
+            #atividade_docente.descricao LIKE '%colegiado%' AND atividade_docente.descricao LIKE '%Meio Ambiente%'
             #atividade_docente.descricao LIKE '%colegiado%' AND (atividade_docente.descricao LIKE '%TGA%' OR atividade_docente.descricao LIKE '%Gestão Ambiental%')
-            AND (
+            #AND 
+            #(
                 -- Comprovante terminou antes do início do período
                 comprovante.fim_vigencia < periodo.data_inicio
 
@@ -35,7 +45,7 @@ $sql = "
 
                 -- Comprovante começou depois do fim do período
                 comprovante.inicio_vigencia > periodo.data_fim
-            )
+            #)
         ORDER BY
             periodo.ano,
             periodo.semestre,
@@ -51,6 +61,7 @@ if (mysqli_num_rows($result) > 0) {
     
     $tabela .= '<td>ID Atividade Docente</td>';
     $tabela .= '<td>ID PID</td>';
+    $tabela .= '<td>Nome</td>';
     $tabela .= '<td>ID Periodo</td>';
     $tabela .= '<td>Ano</td>';
     $tabela .= '<td>Semestre</td>';
@@ -69,6 +80,7 @@ if (mysqli_num_rows($result) > 0) {
         $tabela .= '<tr>';
         $tabela .= '<td>'.$linha['id_atividade_docente'].'</td>';
         $tabela .= '<td>'.$linha['id_pid'].'</td>';
+        $tabela .= '<td>'.$linha['nome'].'</td>';
         $tabela .= '<td>'.$linha['id_periodo'].'</td>';
         $tabela .= '<td>'.$linha['ano'].'</td>';
         $tabela .= '<td>'.$linha['semestre'].'</td>';
@@ -86,11 +98,17 @@ if (mysqli_num_rows($result) > 0) {
                     comprovante.descricao
                 FROM comprovante
                 WHERE
-                    (
-                        comprovante.descricao LIKE '%colegiado%' AND comprovante.descricao LIKE '%Meio Ambiente%'
+                    #(
+                        #comprovante.descricao LIKE '%NDE%' AND (comprovante.descricao LIKE '%ADS%' OR comprovante.descricao LIKE '%Analise%')
+                        #comprovante.descricao LIKE '%NDE%' AND (comprovante.descricao LIKE '%TGA%' OR comprovante.descricao LIKE '%Gestão%')
+                        #comprovante.descricao LIKE '%colegiado%' AND comprovante.descricao LIKE '%administração%'
+                        #comprovante.descricao LIKE '%colegiado%' AND (comprovante.descricao LIKE '%ADS%' OR comprovante.descricao LIKE '%Analise%')
+                        #comprovante.descricao LIKE '%colegiado%' AND comprovante.descricao LIKE '%Informática%'
+                        #comprovante.descricao LIKE '%colegiado%' AND comprovante.descricao LIKE '%Meio Ambiente%'
                         #comprovante.descricao LIKE '%colegiado%' AND (comprovante.descricao LIKE '%TGA%' OR comprovante.descricao LIKE '%Gestão Ambiental%')
                     )
-                    AND '{$linha['data_inicio']}' >= comprovante.inicio_vigencia
+                    #AND 
+                    '{$linha['data_inicio']}' >= comprovante.inicio_vigencia
                     AND '{$linha['data_inicio']}' <= comprovante.fim_vigencia                           
 ";
         //die("<pre>".$sql2);
