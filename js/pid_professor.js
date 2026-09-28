@@ -170,32 +170,36 @@ function carregar() {
 }
 
 function abrirModal(modal, metodo, id_atividade_docente, id_tipo_atividade) {
-
+    console.log('Abrir Modal: '+metodo);
     $('#msg').html('');
     $('#modal_formulario_msg').html('');
 
     $('#id_atividade_docente').val(id_atividade_docente);
     $('#id_tipo_atividade').val(id_tipo_atividade);
 
-    $.when(carregarComponente('carregarAtividade', 'div_atividade')).done(function () {
-        if (metodo == 'atualizar_atividade_pid') {
-            $('#metodo').val('getAtividade_docente');
-            carregar(id_atividade_docente);
-            $('#metodo').val('atualizar_atividade_pid');
-        } else {
-            $('#metodo').val('inserir_atividade_pid');
-            // 3 - Aqui deve ser colocado os campos que serão limpos no formulario de 
-            // inserção
-            $('#descricao').val('');
-            $('#horas_planejadas').val('');
-            $('#observacao').val('');
-            $('#id_atividade').val('');
-            $('#div_historico_atividade').html('');
-        }
-    });
+    if (metodo != 'deletar') {
+        console.log('Abrir Modal diferente de deletar: '+metodo);
+        $.when(carregarComponente('carregarAtividade', 'div_atividade')).done(function () {
+            if (metodo == 'atualizar_atividade_pid') {
+                $('#metodo').val('getAtividade_docente');
+                carregar(id_atividade_docente);
+                $('#metodo').val('atualizar_atividade_pid');
+            } else {
+                $('#metodo').val('inserir_atividade_pid');
+                // 3 - Aqui deve ser colocado os campos que serão limpos no formulario de 
+                // inserção
+                $('#descricao').val('');
+                $('#horas_planejadas').val('');
+                $('#observacao').val('');
+                $('#id_atividade').val('');
+                $('#div_historico_atividade').html('');
+            }
+        });
+    } else {
+        $('#metodo').val('deletar');
+    }
 
-    //$('#metodo').val(metodo_modal);
-    console.log($('#metodo').val());
+    console.log('Campo método: '+$('#metodo').val());
     $('#' + modal).modal();
 }
 
