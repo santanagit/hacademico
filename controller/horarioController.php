@@ -55,8 +55,13 @@ class horarioController {
             $vet_salas[$linhs_salas['id_sala']] = $linhs_salas['descricao'];
         }
 
+        $turnos_validos = array('Vespertino', 'Integral', 'Noturno', 'EAD');
+        $turno = (isset($_POST['turno']) && in_array($_POST['turno'], $turnos_validos))
+                    ? $_POST['turno']
+                    : 'Integral';
+
         $ofertaM = new oferta_disciplinaModel();
-        $result_turma = $ofertaM->getTurmasAtivas($_POST['id_periodo'],$semestre);
+        $result_turma = $ofertaM->getTurmasAtivas($_POST['id_periodo'], $semestre, $turno);
 
         while ($linha_turma = mysqli_fetch_assoc($result_turma)) {
 

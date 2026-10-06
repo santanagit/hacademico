@@ -29,7 +29,7 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
         }
         .glyphicon:before{
             font-family:'Glyphicons Halflings';
-        }            
+        }
     </style>
     <body>
 
@@ -48,25 +48,26 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
             <input type="hidden" name="disciplina_antiga" id="disciplina_antiga">
 
             <div class="container-fluid">
-                <div class="col-md-12">
-                    <div class="panel panel-info">
-                        <div class="panel panel-heading">
-                            Horário das Disciplinas por Turma
-                        </div>
-                        <div class="panel panel-body">
-                            <div class="container-fluid">
-                                <div class="col-md-10">
-                                    <div class="form-group" id="div_periodo"></div>
-                                </div>
-                                <div class="col-md-2">
-                                    <label for="id">&nbsp;</label>
-                                    <button type="button" class="btn btn-success form-control" id="btn_buscar">Buscar</button>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-md-6">
+                    <div class="form-group" id="div_periodo"></div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="turno">Turno:</label>
+                        <select id="turno" name="turno" class="form-control">
+                            <option value="Vespertino">Vespertino</option>
+                            <option value="Integral" selected="selected">Integral</option>
+                            <option value="Noturno">Noturno</option>
+                            <option value="EAD">EAD</option>
+                        </select>
                     </div>
                 </div>
+                <div class="col-md-2">
+                    <label for="id">&nbsp;</label>
+                    <button type="button" class="btn btn-success form-control" id="btn_buscar">Buscar</button>
+                </div>
             </div>
+            
             <div id="msg"></div>
             <div id="moldura"></div>
 

@@ -11,7 +11,7 @@ class oferta_disciplinaModel {
         $this->bd = $conexao->getConexao();
     }
 
-    public function getConselhosDeClasse($id_periodo,$id_usuario) {
+    public function getConselhosDeClasse($id_periodo, $id_usuario) {
         $sql = "SELECT
                     DISTINCT(curso.nome) AS curso
                 FROM
@@ -28,10 +28,10 @@ class oferta_disciplinaModel {
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
         $result = $stmt->get_result();
-        return $result;         
+        return $result;
     }
-    
-    public function getCargaHoraria($id_periodo,$semestre) {
+
+    public function getCargaHoraria($id_periodo, $semestre) {
 
         $sql = "SELECT 
                     `id_usuario`,
@@ -44,14 +44,14 @@ class oferta_disciplinaModel {
 
         if ($semestre == 1) {
             $sql .= "id_periodo = $id_periodo";
-        } else { 
+        } else {
             $id_periodo_anterior = $id_periodo - 1;
             $sql .= "(
                         id_periodo = $id_periodo OR 
                         (id_periodo = $id_periodo_anterior AND modulo = 'Anual')
                     )";
-        }        
-        
+        }
+
         $sql .= "        
                 GROUP BY
                     `id_usuario`,
@@ -63,10 +63,10 @@ class oferta_disciplinaModel {
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
         $result = $stmt->get_result();
-        return $result;        
+        return $result;
     }
 
-    public function listar($id_periodo, $nucleo, $id_turma,$semestre, $parametros = array(), $ordenacao = array(), $limit = array()) {
+    public function listar($id_periodo, $nucleo, $id_turma, $semestre, $parametros = array(), $ordenacao = array(), $limit = array()) {
         //echo ' Núcleo: '.$nucleo.' ';
         $sql = "SELECT
                     periodo.`ano`,
@@ -108,16 +108,16 @@ class oferta_disciplinaModel {
                         OR
                         (periodo.id_periodo = $id_periodo_anterior AND curso.`modulo` = 'Anual')
                     )";
-        }   
-        
+        }
+
         if ($id_turma !== '0') {
             $sql .= " AND turma.id_turma = $id_turma";
         }
 
         if ($nucleo !== '0') {
             $sql .= " AND curso.nucleo = '$nucleo'";
-        } 
-        
+        }
+
         if (count($parametros) > 0) {
             $i = 0;
             $sql .= " AND (";
@@ -144,7 +144,7 @@ class oferta_disciplinaModel {
         if (count($limit) > 0) {
             $sql .= " LIMIT {$limit['inicio']},{$limit['quantidade']}";
         }
-        
+
         //echo $sql;
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
@@ -185,7 +185,7 @@ class oferta_disciplinaModel {
         $result = $stmt->execute() or die($this->bd->error);
         return $result;
     }
-    
+
     public function atualizar_chs($campos) {
 
         $sql = "UPDATE oferta_disciplina 
@@ -197,7 +197,7 @@ class oferta_disciplinaModel {
         //echo $sql;
         $result = $stmt->execute() or die($this->bd->error);
         return $result;
-    }    
+    }
 
     public function atualizar_chs_ead($campos) {
 
@@ -209,8 +209,8 @@ class oferta_disciplinaModel {
         //echo $sql;
         $result = $stmt->execute() or die($this->bd->error);
         return $result;
-    }    
-    
+    }
+
     public function atualizar_tipo($campos) {
 
         $sql = "UPDATE oferta_disciplina 
@@ -221,9 +221,8 @@ class oferta_disciplinaModel {
         $stmt = $this->bd->prepare($sql);
         $result = $stmt->execute() or die($this->bd->error);
         return $result;
-    }  
+    }
 
-    
     public function deletar($id_oferta_disciplina) {
         $sql = "DELETE FROM oferta_disciplina WHERE id_oferta_disciplina = ?";
         $stmt = $this->bd->prepare($sql);
@@ -272,45 +271,54 @@ class oferta_disciplinaModel {
         }
     }
 
-    public function getTurmasAtivas($id_periodo,$semestre) {
-        $sql = "SELECT 
-                    DISTINCT turma.id_turma,
-                    turma.`descricao` as turma,
-                    turma.turno,
-                    turma.`vagas`,
-                    periodo.`ano`,
-                    periodo.`semestre`,
-                    curso.nivel,
-                    DATE_FORMAT(periodo.`data_inicio`,'%d/%m/%Y') AS data_inicio,
-                    DATE_FORMAT(periodo.`data_fim`,'%d/%m/%Y') AS data_fim
-                FROM 
-                    turma LEFT JOIN (oferta_disciplina 
-                        INNER JOIN disciplina 
-                            ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
-                        LEFT JOIN usuario
-                            ON oferta_disciplina.`id_usuario` = usuario.`id_usuario`)
-                        ON turma.id_turma = oferta_disciplina.id_turma
-                    INNER JOIN periodo
-                        ON turma.`id_periodo` = periodo.`id_periodo`
-                    INNER JOIN curso
-                        ON curso.`id_curso` = turma.`id_curso`                          
-                WHERE";
+    public function getTurmasAtivas($id_periodo, $semestre, $turno = '') {
+
+        $sql = "SELECT
+                turma.id_turma,
+                turma.descricao AS turma,
+                turma.turno,
+                turma.vagas,
+                periodo.ano,
+                periodo.semestre,
+                curso.nivel,
+                DATE_FORMAT(periodo.data_inicio,'%d/%m/%Y') AS data_inicio,
+                DATE_FORMAT(periodo.data_fim,'%d/%m/%Y') AS data_fim
+            FROM
+                turma
+                INNER JOIN periodo
+                    ON turma.id_periodo = periodo.id_periodo
+                INNER JOIN curso
+                    ON curso.id_curso = turma.id_curso
+            WHERE ";
+
+        $tipos = '';
+        $params = array();
+
         if ($semestre == 1) {
-            $sql .= " periodo.id_periodo = $id_periodo";
+            $sql .= "turma.id_periodo = ?";
+            $tipos .= 'i';
+            $params[] = (int) $id_periodo;
         } else {
-            $id_periodo_anterior = $id_periodo - 1;
-            $sql .= "
-                    (
-                        (periodo.id_periodo = $id_periodo)
-                        OR
-                        ($id_periodo_anterior AND curso.`modulo` = 'Anual')
-                    )";
+            $sql .= "(
+                    turma.id_periodo = ?
+                    OR
+                    (turma.id_periodo = ? AND curso.modulo = 'Anual')
+                )";
+            $tipos .= 'ii';
+            $params[] = (int) $id_periodo;
+            $params[] = (int) $id_periodo - 1;
         }
-        $sql .= "
-                ORDER BY 
-                    turma.`descricao`";
+
+        if ($turno != '') {
+            $sql .= " AND turma.turno = ?";
+            $tipos .= 's';
+            $params[] = $turno;
+        }
+
+        $sql .= " ORDER BY turma.descricao";
 
         $stmt = $this->bd->prepare($sql);
+        $stmt->bind_param($tipos, ...$params);
         $stmt->execute() or die($this->bd->error);
         $result = $stmt->get_result();
         return $result;
@@ -345,7 +353,7 @@ class oferta_disciplinaModel {
         $result = $stmt->get_result();
         return $result;
     }
-    
+
     public function getDisciplinasOfertadasPeriodo($id_periodo) {
         $sql = "SELECT
                     oferta_disciplina.id_oferta_disciplina,
@@ -374,8 +382,8 @@ class oferta_disciplinaModel {
         $result = $stmt->get_result();
         return $result;
     }
-    
-    public function getDisciplinasOfertadasPeriodoProfessor($id_periodo,$id_usuario,$semestre) {
+
+    public function getDisciplinasOfertadasPeriodoProfessor($id_periodo, $id_usuario, $semestre) {
         $sql = "SELECT
                     oferta_disciplina.id_oferta_disciplina,
                     oferta_disciplina.id_turma,
@@ -408,7 +416,7 @@ class oferta_disciplinaModel {
                         (turma.id_periodo = $id_periodo_anterior AND curso.modulo = 'Anual')
                     )
                     AND            
-            ";           
+            ";
         } else {
             $sql .= " turma.id_periodo = $id_periodo AND ";
         }
@@ -421,13 +429,13 @@ class oferta_disciplinaModel {
         $stmt->execute() or die($this->bd->error);
         $result = $stmt->get_result();
         return $result;
-    }      
-    
+    }
+
     public function getTipo() {
         $sql = "SHOW COLUMNS FROM oferta_disciplina WHERE FIELD = 'tipo'";
         $stmt = $this->bd->prepare($sql);
-        $stmt->execute() or die($this->bd->error); 
+        $stmt->execute() or die($this->bd->error);
         $result = $stmt->get_result();
-        return $result;    
+        return $result;
     }
 }
