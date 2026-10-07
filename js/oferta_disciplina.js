@@ -6,10 +6,6 @@ $(document).ready(function () {
 
     carregarPeriodo();
 
-    $('#btn_buscar').click(function () {
-        listar('');
-    });
-
     $('#modal_formulario').on('shown.bs.modal', function () {
         // 2 - Aqui deve ser colocado o campos que terá o foco ao abrir o formulario
         $('#id_disciplina').focus();
@@ -151,6 +147,7 @@ function choques_horario(id_oferta_disciplina, professor) {
     $('#id_oferta_disciplina').val(id_oferta_disciplina);
 
     var dados = $('#formulario').serialize();
+    dados += "&periodo=" + encodeURIComponent($('#id_periodo option:selected').text());
     $.ajax({
         url: 'controller/' + classe + '.php',
         type: 'post',

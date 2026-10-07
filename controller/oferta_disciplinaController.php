@@ -23,28 +23,29 @@ class oferta_disciplinaController {
 
     public function listar() {
 
-        $periodo = explode("/",$_POST['periodo']);
+        $periodo = explode("/", $_POST['periodo']);
         $semestre = $periodo[1];
-        
+
         $ordenacao = array('turma.descricao' => 'ASC',
             'disciplina.descricao' => 'ASC',
             'usuario.nome' => 'ASC');
 
         $tabela = '';
-        $result = $this->oferta_disciplinaM->listar($_POST['id_periodo'], $_POST['id_nucleo_busca'], $_POST['id_turma_busca'],$semestre, array(), $ordenacao);
+        $result = $this->oferta_disciplinaM->listar($_POST['id_periodo'], $_POST['id_nucleo_busca'], $_POST['id_turma_busca'], $semestre, array(), $ordenacao);
         $total_linhas = mysqli_num_rows($result);
         $turma = '';
+
+        $tabela .= '<div class="container-fluid">';
 
         if ($total_linhas > 0) {
 
             $array_professor = array();
             $usuarioM = new usuarioModel();
-            $result_professor = $usuarioM->listar(11,array(),array("nome"=>"ASC"));
+            $result_professor = $usuarioM->listar(11, array(), array("nome" => "ASC"));
             while ($linha_professor = mysqli_fetch_assoc($result_professor)) {
                 $array_professor[$linha_professor['id_usuario']] = $linha_professor['nome'];
             }
 
-            $tabela .= '<div class="container-fluid">';
             $tabela .= '<div class="col-sm-7">';
 
             $i = 0;
@@ -53,7 +54,7 @@ class oferta_disciplinaController {
                 if ($turma != $linha['turma']) {
 
                     if ($turma != '') {
-                        $tabela .= '</tbory>';
+                        $tabela .= '</tbody>';
                         $tabela .= '</table>';
                         $tabela .= '</div>';
                         $tabela .= '</div>';
@@ -82,16 +83,21 @@ class oferta_disciplinaController {
                     $tabela .= '<th width="3%">&nbsp;</th>';
                     $tabela .= '</tr>';
                     $tabela .= '</thead>';
-                    $tabela .= '<tbory>';
+                    $tabela .= '<tbody>';
                     $turma = $linha['turma'];
                 }
                 if ($linha['id_oferta_disciplina'] != '') {
+
+                    // Evita divisão por zero (PHP 8 lança DivisionByZeroError)
+                    $chs_disc = (float) $linha['chs_disciplina'];
+                    $fator_cht = ($chs_disc > 0) ? ($linha['cht_disciplina'] / $chs_disc) : 0;
+
                     $tabela .= '<tr>';
                     $tabela .= '<td>' . $linha['id_oferta_disciplina'] . '</td>';
                     $tabela .= '<td>' . $linha['disciplina'] . '<br><span style="font-size:9pt;background-color:#FFF8DC">';
                     $tabela .= '<b>CHS: </b><span style="color:blue;font-weight:bold">' . $linha['chs_disciplina'] . '</span> &nbsp;&nbsp;<b>CHS EAD: </b><span style="color:green;font-weight:bold">' . $linha['chs_ead_disciplina'] . '</span>&nbsp;&nbsp;&nbsp;<b>CHT: </b><span style="color:green;font-weight:bold">' . $linha['cht_disciplina'] . '</span>';
                     $tabela .= '</span></td>';
-                    $tabela .= '<td align="center"><input onChange="atualizar_chs(' . $linha['id_oferta_disciplina'] . ',' . $linha['cht_disciplina'] / $linha['chs_disciplina'] . ')" class="form-control" style="width:40px" type="text" name="chs_' . $linha['id_oferta_disciplina'] . '" id="chs_' . $linha['id_oferta_disciplina'] . '" value="' . $linha['chs'] . '"></td>';
+                    $tabela .= '<td align="center"><input onChange="atualizar_chs(' . $linha['id_oferta_disciplina'] . ',' . $fator_cht . ')" class="form-control" style="width:40px" type="text" name="chs_' . $linha['id_oferta_disciplina'] . '" id="chs_' . $linha['id_oferta_disciplina'] . '" value="' . $linha['chs'] . '"></td>';
                     $tabela .= '<td align="center"><input onChange="atualizar_chs_ead(' . $linha['id_oferta_disciplina'] . ')" class="form-control" style="width:40px" type="text" name="chs_ead_' . $linha['id_oferta_disciplina'] . '" id="chs_ead_' . $linha['id_oferta_disciplina'] . '" value="' . $linha['chs_ead'] . '"></td>';
                     $tabela .= '<td align="center"><input readonly class="form-control" style="width:50px" type="text" name="cht_' . $linha['id_oferta_disciplina'] . '" id="cht_' . $linha['id_oferta_disciplina'] . '" value="' . $linha['cht'] . '"></td>';
 
@@ -120,11 +126,11 @@ class oferta_disciplinaController {
 
                     $tabela .= '<td>';
                     if ($linha['tipo'] == 'Aula') {
-                        $tabela .= '<a id="tipo_cor_'.$linha['id_oferta_disciplina'].'" onclick="replaceClass('."'{$linha['id_oferta_disciplina']}','glyphicon glyphicon-education','glyphicon glyphicon-wrench'".')" href="#void" style="color:blue">';
-                        $tabela .= '<span id="tipo_'.$linha['id_oferta_disciplina'].'" class="glyphicon glyphicon-education"></span>';
+                        $tabela .= '<a id="tipo_cor_' . $linha['id_oferta_disciplina'] . '" onclick="replaceClass(' . "'{$linha['id_oferta_disciplina']}','glyphicon glyphicon-education','glyphicon glyphicon-wrench'" . ')" href="#void" style="color:blue">';
+                        $tabela .= '<span id="tipo_' . $linha['id_oferta_disciplina'] . '" class="glyphicon glyphicon-education"></span>';
                     } else {
-                        $tabela .= '<a id="tipo_cor_'.$linha['id_oferta_disciplina'].'" onclick="replaceClass('."'{$linha['id_oferta_disciplina']}','glyphicon glyphicon-wrench','glyphicon glyphicon-education'".')" href="#void" style="color:orange">';
-                        $tabela .= '<span id="tipo_'.$linha['id_oferta_disciplina'].'" class="glyphicon glyphicon-wrench"></span>';
+                        $tabela .= '<a id="tipo_cor_' . $linha['id_oferta_disciplina'] . '" onclick="replaceClass(' . "'{$linha['id_oferta_disciplina']}','glyphicon glyphicon-wrench','glyphicon glyphicon-education'" . ')" href="#void" style="color:orange">';
+                        $tabela .= '<span id="tipo_' . $linha['id_oferta_disciplina'] . '" class="glyphicon glyphicon-wrench"></span>';
                     }
                     $tabela .= '</a>';
                     $tabela .= '</td>';
@@ -133,12 +139,12 @@ class oferta_disciplinaController {
                 }
             }
 
-            $tabela .= '</tbory>';
+            $tabela .= '</tbody>';
             $tabela .= '</table>';
-            $tabela .= '</div>';
-            $tabela .= '</div>';
+            $tabela .= '</div>'; // fecha o panel-body
+            $tabela .= '</div>'; // fecha o panel
+            $tabela .= '</div>'; // fecha o col-sm-7
         }
-        $tabela .= '</div>';
 
         $tabela .= '<div class="col-sm-5" id="div_painel_carga_horaria">';
         $tabela .= '<div class="panel panel-info" id="painel_carga_horaria" style="position:fixed">';
@@ -153,9 +159,9 @@ class oferta_disciplinaController {
         $tabela .= '<th width="10%">EAD</th>';
         $tabela .= '</tr>';
         $tabela .= '</thead>';
-        $tabela .= '<tbory>';
+        $tabela .= '<tbody>';
 
-        $result_ch = $this->oferta_disciplinaM->getCargaHoraria($_POST['id_periodo'],$semestre);
+        $result_ch = $this->oferta_disciplinaM->getCargaHoraria($_POST['id_periodo'], $semestre);
         while ($linha_ch = mysqli_fetch_assoc($result_ch)) {
             $tabela .= '<tr>';
             $tabela .= '<td>' . $linha_ch['nome'] . '</td>';
@@ -163,15 +169,21 @@ class oferta_disciplinaController {
             $tabela .= '<td align="center">' . $linha_ch['chs_ead'] . '</td>';
             $tabela .= '</tr>';
         }
-        $tabela .= '</div>';
-        $tabela .= '</div>';
-        $tabela .= '</div>';
+        $tabela .= '</tbody>';
+        $tabela .= '</table>';
+        $tabela .= '</div>'; // fecha o panel-body
+        $tabela .= '</div>'; // fecha o panel
+        $tabela .= '</div>'; // fecha o col-sm-5
+        $tabela .= '</div>'; // fecha o container-fluid
 
         $resposta = array('tabela' => $tabela);
         return json_encode($resposta);
     }
 
     public function choques_horario() {
+
+        $periodo = explode("/", $_POST['periodo']);
+        $semestre = $periodo[1];
 
         $msg = '';
         $num_choques = 0;
@@ -191,7 +203,7 @@ class oferta_disciplinaController {
 
             // SE NÃO HOUVER HORÁRIO(S) PARA OFERTA DE DISCIPLINA NÃO HAVERÀ CHOQUE
             if (mysqli_num_rows($result_horarios_oferta) == 0) {
-                $tabela .= '<div class="alert alert-info">Não existe horário associado a esta oferta de disicplina! Deseja realmente realizar essa operação? </div>';
+                $tabela .= '<div class="alert alert-info">Não existe horário associado a esta oferta de diciplina! Deseja realmente realizar essa operação? </div>';
                 $tabela .= '<button type="button" style="margin:5px" class="btn btn-success" onclick="atualizar()">Sim</button>';
                 $tabela .= '<button type="button" style="margin:5px" class="btn btn-danger" data-dismiss="modal">Não</button>';
             } else {
@@ -205,7 +217,7 @@ class oferta_disciplinaController {
                         if ($i == 0) {
                             $tabela .= '<div class="panel panel-info">';
                             $tabela .= '<div class="panel-heading">Horários que serão excluídos</div>';
-                            $tabela .= '<div class="panel-boby">';
+                            $tabela .= '<div class="panel-body">';
 
                             $tabela .= '<div class="row">';
                             $tabela .= '<div class="col-sm-6">';
@@ -243,15 +255,17 @@ class oferta_disciplinaController {
                         $tabela .= '</tr>';
                     }
                     $tabela .= '</table>';
-                    $tabela .= '</div>';
-                    $tabela .= '</div>';
+                    $tabela .= '</div>'; // fecha a segunda coluna
+                    $tabela .= '</div>'; // fecha o row
+                    $tabela .= '</div>'; // fecha o panel-body
+                    $tabela .= '</div>'; // fecha o panel
 
                     $tabela .= '<div class="alert alert-danger" style="margin:10px;margin-top:30px; width:97%"> Esta operação irá apagar os horários atribuídos a essa disciplina! Deseja continuar?</div>';
                     $tabela .= '<button type="button" style="margin:5px;margin-left:10px;margin-bottom:15px" class="btn btn-success" onclick="atualizar2()">Sim</button>';
                     $tabela .= '<button type="button" style="margin:5px;margin-bottom:15px"  class="btn btn-danger" data-dismiss="modal">Não</button>';
 
                     // Será verificado os horários da disciplina ofertada com o professor antigo
-                    // chocam com os horários das disicplinas do professor novo.
+                    // chocam com os horários das diciplinas do professor novo.
                 } else {
 
                     $i = 0;
@@ -260,7 +274,7 @@ class oferta_disciplinaController {
                         if ($i == 0) {
                             $tabela .= '<div class="panel panel-info">';
                             $tabela .= '<div class="panel-heading">Verificação de choques de horário com o novo professor</div>';
-                            $tabela .= '<div class="panel-boby">';
+                            $tabela .= '<div class="panel-body">';
 
                             $tabela .= '<table class="table table-condensed table-striped table-bordered table-hover" style="margin:10px; width:97%">';
                             $tabela .= '<tr>';
@@ -293,7 +307,7 @@ class oferta_disciplinaController {
                         $tabela .= '<td>' . $linhaH['dia'] . '</td>';
                         $tabela .= '<td>' . $linhaH['horario'] . '</td>';
 
-                        $result_existe_choque = $horarioM->existeChoque($_POST['id_usuario'], $linhaH['id_dia'], $linhaH['id_hora'], $_POST['id_periodo']);
+                        $result_existe_choque = $horarioM->existeChoque($_POST['id_usuario'], $linhaH['id_dia'], $linhaH['id_hora'], $_POST['id_periodo'], $semestre);
                         $total_choques = mysqli_num_rows($result_existe_choque);
                         if ($total_choques > 0) {
                             $linhaChoque = mysqli_fetch_assoc($result_existe_choque);
@@ -306,19 +320,15 @@ class oferta_disciplinaController {
                     }
 
                     $tabela .= '</table>';
-                    $tabela .= '</div>';
-                    $tabela .= '</div>';
+                    $tabela .= '</div>'; // fecha o panel-body
+                    $tabela .= '</div>'; // fecha o panel
 
                     if ($num_choques > 0) {
                         $tabela .= '<div class="alert alert-danger"> O professor ' . $_POST['professor_novo'] . ' possui ' . $num_choques . ' disciplina(s) no mesmo horário! Ajuste o horário antes de realizar esta operação!</div>';
                         $tabela .= '<button type="button" class="btn btn-danger" data-dismiss="modal">Fechar</button>';
                         $resultado = true;
                     } else {
-                        if ($_POST['id_usuario_antigo'] == "") {
-                            $tabela .= '<div class="alert alert-info"> Não existe horário associado a esta disciplina! Deseja realmente realizar essa operação? </div>';
-                        } else {
-                            $tabela .= '<div class="alert alert-info"> O professor ' . $_POST['professor_novo'] . ' não possui disciplinas no mesmo horário! Deseja realmente realizar essa alteração? </div>';
-                        }
+                        $tabela .= '<div class="alert alert-info"> O professor ' . $_POST['professor_novo'] . ' não possui disciplinas no mesmo horário! Deseja realmente realizar essa alteração? </div>';
                         $tabela .= '<button type="button" style="margin:5px" class="btn btn-success" onclick="atualizar()">Sim</button>';
                         $tabela .= '<button type="button" style="margin:5px" class="btn btn-danger" data-dismiss="modal">Não</button>';
                         $resultado = false;
@@ -408,7 +418,7 @@ class oferta_disciplinaController {
         if ($res) {
             $this->msg .= '<div class="alert alert-success">';
             $this->msg .= $msg;
-            $this->msg .= 'Oferta de disicplina atualizada com sucesso!';
+            $this->msg .= 'Oferta de diciplina atualizada com sucesso!';
             $this->msg .= '</div>';
             $resultado = true;
         } else {
@@ -505,8 +515,8 @@ class oferta_disciplinaController {
         }
         $resposta = array('resultado' => $resultado, 'msg' => $this->msg);
         return json_encode($resposta);
-    }    
-    
+    }
+
     public function carregarDisciplina() {
 
         $select = '<label for="id_disciplina">Disciplina:</label>';
@@ -529,10 +539,10 @@ class oferta_disciplinaController {
     }
 
     public function carregarTurma() {
-        
-        $periodo = explode("/",$_POST['periodo']);
-        $semestre = $periodo[1]; 
-        
+
+        $periodo = explode("/", $_POST['periodo']);
+        $semestre = $periodo[1];
+
         $select = '<label for="id_turma">Turma:</label>';
         $select .= '<select id="id_turma" name="id_turma" class="form-control">';
         $select .= "<option value=''></option>";
@@ -540,7 +550,7 @@ class oferta_disciplinaController {
         $this->turmaM = new turmaModel();
         $ordem = array('descricao' => 'ASC');
 
-        $result = $this->oferta_disciplinaM->getTurmasAtivas($_POST['id_periodo'],$semestre);
+        $result = $this->oferta_disciplinaM->getTurmasAtivas($_POST['id_periodo'], $semestre);
         while ($linha = mysqli_fetch_assoc($result)) {
             $select .= "<option value='{$linha['id_turma']}'>";
             $select .= $linha['turma'];
@@ -573,36 +583,36 @@ class oferta_disciplinaController {
 
         return json_encode($resposta);
     }
-    
+
     public function carregarTipo() {
         $select = '<label for="tipo">Tipo:</label>';
         $select .= '<select id="tipo" name="tipo" class="form-control">';
-        
+
         $result = $this->oferta_disciplinaM->getTipo();
         $linha = mysqli_fetch_assoc($result);
         $enum = str_replace('enum(', '', $linha['Type']);
         $enum = str_replace(')', '', $enum);
         $enum = str_replace("'", "", $enum);
         $nivel = explode(",", $enum);
-        
+
         foreach ($nivel as $valor) {
-            $select .= "<option value='{$valor}'>"; 
+            $select .= "<option value='{$valor}'>";
             $select .= $valor;
             $select .= '</option>';
         }
-        $select .= '</select>';        
-        $resposta = array('select'=>$select);
-        
-        return json_encode($resposta);          
+        $select .= '</select>';
+        $resposta = array('select' => $select);
+
+        return json_encode($resposta);
     }
 
     public function getTurmasAtivas() {
 
-        $periodo = explode("/",$_POST['periodo']);
-        $semestre = $periodo[1];        
-        
+        $periodo = explode("/", $_POST['periodo']);
+        $semestre = $periodo[1];
+
         $options = '';
-        $result = $this->oferta_disciplinaM->getTurmasAtivas($_POST['id_periodo'],$semestre);
+        $result = $this->oferta_disciplinaM->getTurmasAtivas($_POST['id_periodo'], $semestre);
         $options .= '<option selected="selected" value="0">Todas</option>';
         if ($result) {
             while ($linha = $result->fetch_assoc()) {
@@ -620,7 +630,7 @@ class oferta_disciplinaController {
         $select = '<label for="id_periodo">Periodo:</label>';
         $select .= '<select id="id_periodo" name="id_periodo" class="form-control" style="width:100%" onChange="getTurmasAtivas()">';
         $periodoM = new periodoModel();
-        
+
         $criterios = array();
         if ($_SESSION['perfil'] == 'Professor') {
             $criterios['publicado'] = 1;
@@ -628,8 +638,8 @@ class oferta_disciplinaController {
         if ($_SESSION['perfil'] == 'Coordenador de Curso') {
             $criterios['publicado'] = 1;
         }
-        
-        $resultado_periodos = $periodoM->listar(array(), array('id_periodo'=>'DESC'),array(),$criterios);
+
+        $resultado_periodos = $periodoM->listar(array(), array('id_periodo' => 'DESC'), array(), $criterios);
 
         while ($linha = mysqli_fetch_assoc($resultado_periodos)) {
             $select .= "<option value='{$linha['id_periodo']}'>";

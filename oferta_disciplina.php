@@ -67,7 +67,7 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
             </div>              
 
 
-                    
+
             <div id="tabela"></div>
 
             <!--
@@ -118,7 +118,6 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal">&times;</button>
                             <h4 class="modal-title text-center">Relatório de choques de horário</h4>
-                            <div id="modal_formulario_msg"></div>
                         </div>
                         <div class="modal-body">                                                                                          
                             <div class="form-group" id="div_choques"></div>  
@@ -126,8 +125,8 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
                     </div>
                 </div>   
             </div>
-            
-            
+
+
             <!--
             Modal para confirmação de exclusão
             -->
@@ -137,7 +136,7 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
                     <div class="modal-content">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal">&times;</button>
-                            <h4 class="modal-title">Exclusão ds oferta de disciplina</h4>
+                            <h4 class="modal-title">Exclusão da oferta de disciplina</h4>
                             <div id="modal_confirmacao_msg"></div>
                         </div>
                         <div class="modal-body">
@@ -152,7 +151,7 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
                     </div>
                 </div>   
             </div>
-        </div>
-    </form>
-</body>
+
+        </form>
+    </body>
 </html>
