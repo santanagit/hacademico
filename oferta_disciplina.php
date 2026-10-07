@@ -98,7 +98,7 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
                                 <input type="number" readonly min="0" max="200" step=".01" class="form-control" id="cht" name="cht">
                             </div>
                             <div class="form-group" id="div_professor"></div>                          
-                            <div class="form-group" id="div_tipo"></div>
+                            
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>

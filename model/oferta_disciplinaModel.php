@@ -15,30 +15,28 @@ class oferta_disciplinaModel {
         $sql = "SELECT
                     DISTINCT(curso.nome) AS curso
                 FROM
-                    oferta_disciplina INNER JOIN turma
-                            ON oferta_disciplina.`id_turma` = turma.id_turma
+                    oferta_disciplina
+                    INNER JOIN turma
+                        ON oferta_disciplina.id_turma = turma.id_turma
                     INNER JOIN curso
-                            ON turma.id_curso = curso.id_curso
+                        ON turma.id_curso = curso.id_curso
                 WHERE
                     curso.nivel = 'Técnico' AND
                     turma.id_periodo = $id_periodo AND
-                    oferta_disciplina.`id_usuario` = $id_usuario";
-//        echo $sql;
-//        die();
+                    oferta_disciplina.id_usuario = $id_usuario";
+
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+        return $stmt->get_result();
     }
 
     public function getCargaHoraria($id_periodo, $semestre) {
-
-        $sql = "SELECT 
-                    `id_usuario`,
-                    `nome`,
+        $sql = "SELECT
+                    id_usuario,
+                    nome,
                     SUM(chs) AS chs,
                     SUM(chs_ead) AS chs_ead
-                FROM 
+                FROM
                     carga_horaria_docente
                 WHERE ";
 
@@ -47,66 +45,72 @@ class oferta_disciplinaModel {
         } else {
             $id_periodo_anterior = $id_periodo - 1;
             $sql .= "(
-                        id_periodo = $id_periodo OR 
-                        (id_periodo = $id_periodo_anterior AND modulo = 'Anual')
+                        id_periodo = $id_periodo OR
+                        (
+                            id_periodo = $id_periodo_anterior AND
+                            modulo = 'Anual'
+                        )
                     )";
         }
 
-        $sql .= "        
+        $sql .= "
                 GROUP BY
-                    `id_usuario`,
-                    `nome`
-                ORDER BY 
+                    id_usuario,
                     nome
-                ";
-        //echo $sql;
+                ORDER BY
+                    nome";
+
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+        return $stmt->get_result();
     }
 
     public function listar($id_periodo, $nucleo, $id_turma, $semestre, $parametros = array(), $ordenacao = array(), $limit = array()) {
-        //echo ' Núcleo: '.$nucleo.' ';
         $sql = "SELECT
-                    periodo.`ano`,
-                    periodo.`semestre`,
+                    periodo.ano,
+                    periodo.semestre,
                     turma.descricao AS turma,
-                    disciplina.`descricao` AS disciplina,
+                    disciplina.descricao AS disciplina,
                     disciplina.chs AS chs_disciplina,
                     disciplina.cht AS cht_disciplina,
                     disciplina.chs_ead AS chs_ead_disciplina,
-                    oferta_disciplina.`chs` AS chs,
-                    oferta_disciplina.cht AS cht,
-                    oferta_disciplina.`chs_ead` AS chs_ead,
-                    usuario.`nome` AS professor,
-                    oferta_disciplina.`id_oferta_disciplina`,
-                    oferta_disciplina.`id_disciplina`,
-                    turma.`id_turma`,
-                    oferta_disciplina.`id_usuario`,
+                    oferta_disciplina.chs,
+                    oferta_disciplina.cht,
+                    oferta_disciplina.chs_ead,
+                    usuario.nome AS professor,
+                    oferta_disciplina.id_oferta_disciplina,
+                    oferta_disciplina.id_disciplina,
+                    turma.id_turma,
+                    oferta_disciplina.id_usuario,
                     curso.nucleo,
-                    oferta_disciplina.tipo
-                FROM 
-                    turma LEFT JOIN (oferta_disciplina 
-                                        INNER JOIN disciplina 
-                                            ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
-                                        LEFT JOIN usuario
-                                            ON oferta_disciplina.`id_usuario` = usuario.`id_usuario`)
+                    oferta_disciplina.tipo,
+                    oferta_disciplina.turma_dividida
+                FROM
+                    turma
+                    LEFT JOIN (
+                        oferta_disciplina
+                        INNER JOIN disciplina
+                            ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
+                        LEFT JOIN usuario
+                            ON oferta_disciplina.id_usuario = usuario.id_usuario
+                    )
                         ON turma.id_turma = oferta_disciplina.id_turma
                     INNER JOIN periodo
-                        ON turma.`id_periodo` = periodo.`id_periodo` 
+                        ON turma.id_periodo = periodo.id_periodo
                     INNER JOIN curso
-                        ON turma.`id_curso` = curso.`id_curso`                             
-                WHERE";
+                        ON turma.id_curso = curso.id_curso
+                WHERE ";
+
         if ($semestre == 1) {
-            $sql .= " periodo.id_periodo = $id_periodo";
+            $sql .= "periodo.id_periodo = $id_periodo";
         } else {
             $id_periodo_anterior = $id_periodo - 1;
-            $sql .= "
-                    (
-                        (periodo.id_periodo = $id_periodo)
-                        OR
-                        (periodo.id_periodo = $id_periodo_anterior AND curso.`modulo` = 'Anual')
+            $sql .= "(
+                        periodo.id_periodo = $id_periodo OR
+                        (
+                            periodo.id_periodo = $id_periodo_anterior AND
+                            curso.modulo = 'Anual'
+                        )
                     )";
         }
 
@@ -119,23 +123,30 @@ class oferta_disciplinaModel {
         }
 
         if (count($parametros) > 0) {
-            $i = 0;
             $sql .= " AND (";
+            $i = 0;
+
             foreach ($parametros as $key => $value) {
-                if ($i > 0)
+                if ($i > 0) {
                     $sql .= " OR ";
-                $sql .= "$key like '%$value%'";
+                }
+
+                $sql .= "$key LIKE '%$value%'";
                 $i++;
             }
+
             $sql .= ")";
         }
 
         if (count($ordenacao) > 0) {
+            $sql .= " ORDER BY ";
             $i = 0;
-            $sql .= ' ORDER BY ';
+
             foreach ($ordenacao as $key => $value) {
-                if ($i > 0)
+                if ($i > 0) {
                     $sql .= ", ";
+                }
+
                 $sql .= "$key $value";
                 $i++;
             }
@@ -145,297 +156,382 @@ class oferta_disciplinaModel {
             $sql .= " LIMIT {$limit['inicio']},{$limit['quantidade']}";
         }
 
-        //echo $sql;
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+        return $stmt->get_result();
     }
 
     public function inserir($campos) {
-        if (!isset($campos['id_usuario'])) {
-            $campos['id_usuario'] = 'NULL';
+        if (!isset($campos['id_usuario']) || trim($campos['id_usuario']) === '') {
+            $id_usuario = 'NULL';
+        } else {
+            $id_usuario = (int) $campos['id_usuario'];
         }
-        $sql = "INSERT INTO oferta_disciplina(id_disciplina,id_turma,id_usuario,chs,chs_ead,cht,tipo) "
-                . "VALUES ({$campos['id_disciplina']},{$campos['id_turma']},{$campos['id_usuario']},{$campos['chs']},{$campos['chs_ead']},{$campos['cht']},'{$campos['tipo']}')";
+
+        $id_disciplina = (int) $campos['id_disciplina'];
+        $id_turma = (int) $campos['id_turma'];
+        $chs = (float) $campos['chs'];
+        $chs_ead = (float) $campos['chs_ead'];
+        $cht = (float) $campos['cht'];
+
+        /*
+         * O tipo permanece no banco por compatibilidade, mas novas ofertas
+         * serão sempre cadastradas como Aula.
+         */
+        $sql = "INSERT INTO oferta_disciplina
+                    (
+                        id_disciplina,
+                        id_turma,
+                        id_usuario,
+                        chs,
+                        chs_ead,
+                        cht,
+                        tipo,
+                        turma_dividida
+                    )
+                VALUES
+                    (
+                        $id_disciplina,
+                        $id_turma,
+                        $id_usuario,
+                        $chs,
+                        $chs_ead,
+                        $cht,
+                        'Aula',
+                        0
+                    )";
 
         $stmt = $this->bd->prepare($sql);
         $result = $stmt->execute() or die($this->bd->error);
+
         if (!$result) {
             return false;
-        } else {
-            return mysqli_stmt_insert_id($stmt);
         }
+
+        return mysqli_stmt_insert_id($stmt);
     }
 
     public function atualizar($campos) {
-        if (!isset($campos['id_usuario'])) {
-            $campos['id_usuario'] = 'id_usuario = NULL ';
-        } else if ($campos['id_usuario'] == '') {
-            $campos['id_usuario'] = 'id_usuario = NULL ';
+        if (!isset($campos['id_usuario']) || trim($campos['id_usuario']) === '') {
+            $usuario = "id_usuario = NULL";
         } else {
-            $campos['id_usuario'] = "id_usuario = {$campos['id_usuario']} ";
+            $usuario = "id_usuario = " . (int) $campos['id_usuario'];
         }
-        $sql = "UPDATE oferta_disciplina "
-                . "SET "
-                . $campos['id_usuario']
-                . "WHERE id_oferta_disciplina = {$campos['id_oferta_disciplina']}";
+
+        $id_oferta_disciplina = (int) $campos['id_oferta_disciplina'];
+
+        $sql = "UPDATE oferta_disciplina
+                SET $usuario
+                WHERE id_oferta_disciplina = $id_oferta_disciplina";
+
         $stmt = $this->bd->prepare($sql);
-        //echo $sql;
-        $result = $stmt->execute() or die($this->bd->error);
-        return $result;
+        return $stmt->execute() or die($this->bd->error);
     }
 
     public function atualizar_chs($campos) {
+        $chs = (float) $campos['chs'];
+        $cht = (float) $campos['cht'];
+        $id_oferta_disciplina = (int) $campos['id_oferta_disciplina'];
 
-        $sql = "UPDATE oferta_disciplina 
-                SET 
-                    chs = {$campos['chs']},
-                    cht = {$campos['cht']}
-                WHERE id_oferta_disciplina = {$campos['id_oferta_disciplina']}";
+        $sql = "UPDATE oferta_disciplina
+                SET
+                    chs = $chs,
+                    cht = $cht
+                WHERE id_oferta_disciplina = $id_oferta_disciplina";
+
         $stmt = $this->bd->prepare($sql);
-        //echo $sql;
-        $result = $stmt->execute() or die($this->bd->error);
-        return $result;
+        return $stmt->execute() or die($this->bd->error);
     }
 
     public function atualizar_chs_ead($campos) {
+        $chs_ead = (float) $campos['chs_ead'];
+        $id_oferta_disciplina = (int) $campos['id_oferta_disciplina'];
 
-        $sql = "UPDATE oferta_disciplina 
-                SET 
-                    chs_ead = {$campos['chs_ead']}
-                WHERE id_oferta_disciplina = {$campos['id_oferta_disciplina']}";
+        $sql = "UPDATE oferta_disciplina
+                SET chs_ead = $chs_ead
+                WHERE id_oferta_disciplina = $id_oferta_disciplina";
+
         $stmt = $this->bd->prepare($sql);
-        //echo $sql;
-        $result = $stmt->execute() or die($this->bd->error);
-        return $result;
+        return $stmt->execute() or die($this->bd->error);
     }
 
     public function atualizar_tipo($campos) {
+        $id_oferta_disciplina = (int) $campos['id_oferta_disciplina'];
 
-        $sql = "UPDATE oferta_disciplina 
-                SET 
-                    tipo = '{$campos['tipo']}'
-                WHERE id_oferta_disciplina = {$campos['id_oferta_disciplina']}";
-        //echo $sql;
+        $sql = "UPDATE oferta_disciplina
+                SET tipo = 'Aula'
+                WHERE id_oferta_disciplina = $id_oferta_disciplina";
+
         $stmt = $this->bd->prepare($sql);
-        $result = $stmt->execute() or die($this->bd->error);
-        return $result;
+        return $stmt->execute() or die($this->bd->error);
+    }
+
+    public function atualizar_turma_dividida($campos) {
+        $id_oferta_disciplina = (int) $campos['id_oferta_disciplina'];
+        $turma_dividida = !empty($campos['turma_dividida']) ? 1 : 0;
+
+        $sql = "UPDATE oferta_disciplina
+                SET turma_dividida = $turma_dividida
+                WHERE id_oferta_disciplina = $id_oferta_disciplina";
+
+        $stmt = $this->bd->prepare($sql);
+        return $stmt->execute() or die($this->bd->error);
     }
 
     public function deletar($id_oferta_disciplina) {
-        $sql = "DELETE FROM oferta_disciplina WHERE id_oferta_disciplina = ?";
+        $sql = "DELETE FROM oferta_disciplina
+                WHERE id_oferta_disciplina = ?";
+
         $stmt = $this->bd->prepare($sql);
+        $id_oferta_disciplina = (int) $id_oferta_disciplina;
         $stmt->bind_param("i", $id_oferta_disciplina);
-        $result = $stmt->execute() or die($this->bd->error);
-        return $result;
+        return $stmt->execute() or die($this->bd->error);
     }
 
     public function getOfertaDisciplina($id_oferta_disciplina) {
-        $sql = "SELECT oferta_disciplina.*, usuario.nome, disciplina.descricao "
-                . "FROM oferta_disciplina INNER JOIN usuario ON oferta_disciplina.id_usuario = usuario.id_usuario "
-                . "INNER JOIN disciplina ON oferta_disciplina.id_disciplina = disciplina.id_disciplina "
-                . "WHERE id_oferta_disciplina = ?";
+        $sql = "SELECT
+                    oferta_disciplina.*,
+                    usuario.nome,
+                    disciplina.descricao
+                FROM
+                    oferta_disciplina
+                    LEFT JOIN usuario
+                        ON oferta_disciplina.id_usuario = usuario.id_usuario
+                    INNER JOIN disciplina
+                        ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
+                WHERE oferta_disciplina.id_oferta_disciplina = ?";
+
         $stmt = $this->bd->prepare($sql);
+        $id_oferta_disciplina = (int) $id_oferta_disciplina;
         $stmt->bind_param("i", $id_oferta_disciplina);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+
+        return $stmt->get_result();
     }
 
     public function existeVinculo($id_oferta_disciplina) {
-        $sql = "SELECT id_horario FROM horario WHERE id_oferta_disciplina = $id_oferta_disciplina";
+        $id_oferta_disciplina = (int) $id_oferta_disciplina;
+
+        $sql = "SELECT id_horario
+                FROM horario
+                WHERE id_oferta_disciplina = $id_oferta_disciplina";
 
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
         $stmt->store_result();
-        $stmt->num_rows;
-        if ($stmt->num_rows > 0) {
-            return true;
-        } else {
-            return false;
-        }
+
+        return $stmt->num_rows > 0;
     }
 
     public function existeOfertaDisciplina($id_disciplina, $id_turma, $id_usuario) {
-        $sql = "SELECT * FROM oferta_disciplina WHERE id_disciplina = $id_disciplina AND id_turma = $id_turma AND id_usuario = $id_usuario";
-        //echo $sql;        
+        $id_disciplina = (int) $id_disciplina;
+        $id_turma = (int) $id_turma;
+
+        if (trim((string) $id_usuario) === '' || strtoupper((string) $id_usuario) === 'NULL') {
+            $sql = "SELECT id_oferta_disciplina
+                    FROM oferta_disciplina
+                    WHERE
+                        id_disciplina = $id_disciplina AND
+                        id_turma = $id_turma AND
+                        id_usuario IS NULL";
+        } else {
+            $id_usuario = (int) $id_usuario;
+
+            $sql = "SELECT id_oferta_disciplina
+                    FROM oferta_disciplina
+                    WHERE
+                        id_disciplina = $id_disciplina AND
+                        id_turma = $id_turma AND
+                        id_usuario = $id_usuario";
+        }
+
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
         $stmt->store_result();
-        $stmt->num_rows;
-        if ($stmt->num_rows > 0) {
-            return true;
-        } else {
-            return false;
-        }
+
+        return $stmt->num_rows > 0;
     }
 
     public function getTurmasAtivas($id_periodo, $semestre, $turno = '') {
-
         $sql = "SELECT
-                turma.id_turma,
-                turma.descricao AS turma,
-                turma.turno,
-                turma.vagas,
-                periodo.ano,
-                periodo.semestre,
-                curso.nivel,
-                DATE_FORMAT(periodo.data_inicio,'%d/%m/%Y') AS data_inicio,
-                DATE_FORMAT(periodo.data_fim,'%d/%m/%Y') AS data_fim
-            FROM
-                turma
-                INNER JOIN periodo
-                    ON turma.id_periodo = periodo.id_periodo
-                INNER JOIN curso
-                    ON curso.id_curso = turma.id_curso
-            WHERE ";
+                    turma.id_turma,
+                    turma.descricao AS turma,
+                    turma.turno,
+                    turma.vagas,
+                    periodo.ano,
+                    periodo.semestre,
+                    curso.nivel,
+                    DATE_FORMAT(periodo.data_inicio,'%d/%m/%Y') AS data_inicio,
+                    DATE_FORMAT(periodo.data_fim,'%d/%m/%Y') AS data_fim
+                FROM
+                    turma
+                    INNER JOIN periodo
+                        ON turma.id_periodo = periodo.id_periodo
+                    INNER JOIN curso
+                        ON curso.id_curso = turma.id_curso
+                WHERE ";
 
         $tipos = '';
-        $params = array();
+        $parametros = array();
 
         if ($semestre == 1) {
             $sql .= "turma.id_periodo = ?";
             $tipos .= 'i';
-            $params[] = (int) $id_periodo;
+            $parametros[] = (int) $id_periodo;
         } else {
             $sql .= "(
-                    turma.id_periodo = ?
-                    OR
-                    (turma.id_periodo = ? AND curso.modulo = 'Anual')
-                )";
+                        turma.id_periodo = ? OR
+                        (
+                            turma.id_periodo = ? AND
+                            curso.modulo = 'Anual'
+                        )
+                    )";
+
             $tipos .= 'ii';
-            $params[] = (int) $id_periodo;
-            $params[] = (int) $id_periodo - 1;
+            $parametros[] = (int) $id_periodo;
+            $parametros[] = (int) $id_periodo - 1;
         }
 
-        if ($turno != '') {
+        if ($turno !== '') {
             $sql .= " AND turma.turno = ?";
             $tipos .= 's';
-            $params[] = $turno;
+            $parametros[] = $turno;
         }
 
         $sql .= " ORDER BY turma.descricao";
 
         $stmt = $this->bd->prepare($sql);
-        $stmt->bind_param($tipos, ...$params);
+        $stmt->bind_param($tipos, ...$parametros);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+
+        return $stmt->get_result();
     }
 
     public function getDisciplinasOfertadas($id_turma) {
+        $id_turma = (int) $id_turma;
+
         $sql = "SELECT
                     oferta_disciplina.id_oferta_disciplina,
                     oferta_disciplina.id_turma,
                     oferta_disciplina.id_usuario,
                     oferta_disciplina.id_disciplina,
-                    disciplina.descricao as disciplina,
+                    disciplina.descricao AS disciplina,
                     disciplina.chs,
                     disciplina.chs_ead,
                     disciplina.cht,
-                    disciplina.id_disciplina,
-                    usuario.nome as professor,
-                    oferta_disciplina.tipo
+                    usuario.nome AS professor,
+                    oferta_disciplina.tipo,
+                    oferta_disciplina.turma_dividida
                 FROM
-                    oferta_disciplina 
-                    INNER JOIN disciplina 
+                    oferta_disciplina
+                    INNER JOIN disciplina
                         ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
-                    INNER JOIN usuario
+                    LEFT JOIN usuario
                         ON oferta_disciplina.id_usuario = usuario.id_usuario
-                WHERE 
-                    id_turma = $id_turma 
+                WHERE
+                    oferta_disciplina.id_turma = $id_turma
                 ORDER BY
-                    disciplina.descricao
-                ";
+                    disciplina.descricao,
+                    usuario.nome";
+
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+
+        return $stmt->get_result();
     }
 
     public function getDisciplinasOfertadasPeriodo($id_periodo) {
+        $id_periodo = (int) $id_periodo;
+
         $sql = "SELECT
                     oferta_disciplina.id_oferta_disciplina,
                     oferta_disciplina.id_turma,
                     oferta_disciplina.id_usuario,
                     oferta_disciplina.id_disciplina,
-                    disciplina.descricao as disciplina,
+                    disciplina.descricao AS disciplina,
                     disciplina.chs,
                     disciplina.chs_ead,
                     disciplina.cht,
-                    disciplina.id_disciplina,
-                    usuario.nome as professor,
+                    usuario.nome AS professor,
                     turma.descricao,
-                    oferta_disciplina.tipo
+                    oferta_disciplina.tipo,
+                    oferta_disciplina.turma_dividida
                 FROM
-                    oferta_disciplina 
-                    INNER JOIN disciplina 
+                    oferta_disciplina
+                    INNER JOIN disciplina
                         ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
                     INNER JOIN turma
                         ON oferta_disciplina.id_turma = turma.id_turma
-                    INNER JOIN usuario
+                    LEFT JOIN usuario
                         ON oferta_disciplina.id_usuario = usuario.id_usuario
-                WHERE turma.`id_periodo` = $id_periodo ORDER BY disciplina.descricao";
+                WHERE turma.id_periodo = $id_periodo
+                ORDER BY disciplina.descricao";
+
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+
+        return $stmt->get_result();
     }
 
     public function getDisciplinasOfertadasPeriodoProfessor($id_periodo, $id_usuario, $semestre) {
+        $id_periodo = (int) $id_periodo;
+        $id_usuario = (int) $id_usuario;
+
         $sql = "SELECT
                     oferta_disciplina.id_oferta_disciplina,
                     oferta_disciplina.id_turma,
                     oferta_disciplina.id_usuario,
                     oferta_disciplina.id_disciplina,
-                    disciplina.descricao as disciplina,
+                    disciplina.descricao AS disciplina,
                     oferta_disciplina.chs,
                     oferta_disciplina.chs_ead,
                     oferta_disciplina.cht,
-                    disciplina.id_disciplina,
-                    usuario.nome as professor,
+                    usuario.nome AS professor,
                     turma.descricao,
-                    oferta_disciplina.tipo
+                    oferta_disciplina.tipo,
+                    oferta_disciplina.turma_dividida
                 FROM
-                    oferta_disciplina 
-                    INNER JOIN disciplina 
+                    oferta_disciplina
+                    INNER JOIN disciplina
                         ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
                     INNER JOIN turma
                         ON oferta_disciplina.id_turma = turma.id_turma
                     INNER JOIN usuario
                         ON oferta_disciplina.id_usuario = usuario.id_usuario
                     INNER JOIN curso
-                        ON curso.`id_curso` = turma.`id_curso`                        
+                        ON curso.id_curso = turma.id_curso
                 WHERE ";
+
         if ($semestre == 2) {
             $id_periodo_anterior = $id_periodo - 1;
-            $sql .= " 
-                    (
+
+            $sql .= "(
                         turma.id_periodo = $id_periodo OR
-                        (turma.id_periodo = $id_periodo_anterior AND curso.modulo = 'Anual')
+                        (
+                            turma.id_periodo = $id_periodo_anterior AND
+                            curso.modulo = 'Anual'
+                        )
                     )
-                    AND            
-            ";
+                    AND ";
         } else {
-            $sql .= " turma.id_periodo = $id_periodo AND ";
+            $sql .= "turma.id_periodo = $id_periodo AND ";
         }
-        $sql .= " 
-                   
-                    oferta_disciplina.id_usuario = $id_usuario
-                ORDER BY 
-                    disciplina.descricao";
+
+        $sql .= "oferta_disciplina.id_usuario = $id_usuario
+                 ORDER BY disciplina.descricao";
+
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+
+        return $stmt->get_result();
     }
 
     public function getTipo() {
         $sql = "SHOW COLUMNS FROM oferta_disciplina WHERE FIELD = 'tipo'";
+
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
-        $result = $stmt->get_result();
-        return $result;
+
+        return $stmt->get_result();
     }
 }

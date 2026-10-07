@@ -80,7 +80,7 @@ class oferta_disciplinaController {
                     $tabela .= '<th width="5%">CHT</th>';
                     $tabela .= '<th width="38%">Professor</th>';
                     $tabela .= '<th width="1%">&nbsp;</th>';
-                    $tabela .= '<th width="3%">&nbsp;</th>';
+                    $tabela .= '<th width="3%" title="Turma dividida">Div.</th>';
                     $tabela .= '</tr>';
                     $tabela .= '</thead>';
                     $tabela .= '<tbody>';
@@ -124,15 +124,36 @@ class oferta_disciplinaController {
                     $tabela .= '</a>';
                     $tabela .= '</td>';
 
-                    $tabela .= '<td>';
-                    if ($linha['tipo'] == 'Aula') {
-                        $tabela .= '<a id="tipo_cor_' . $linha['id_oferta_disciplina'] . '" onclick="replaceClass(' . "'{$linha['id_oferta_disciplina']}','glyphicon glyphicon-education','glyphicon glyphicon-wrench'" . ')" href="#void" style="color:blue">';
-                        $tabela .= '<span id="tipo_' . $linha['id_oferta_disciplina'] . '" class="glyphicon glyphicon-education"></span>';
+                    $tabela .= '<td style="text-align:center">';
+
+                    if ((int) $linha['turma_dividida'] === 1) {
+                        $tabela .= '<a
+                            id="turma_dividida_cor_' . $linha['id_oferta_disciplina'] . '"
+                            href="#void"
+                            title="Turma dividida: sim"
+                            onclick="atualizarTurmaDividida(' . $linha['id_oferta_disciplina'] . ', 0)"
+                            style="color:green">';
+
+                        $tabela .= '<span
+                            id="turma_dividida_' . $linha['id_oferta_disciplina'] . '"
+                            class="glyphicon glyphicon-transfer"></span>';
+
+                        $tabela .= '</a>';
                     } else {
-                        $tabela .= '<a id="tipo_cor_' . $linha['id_oferta_disciplina'] . '" onclick="replaceClass(' . "'{$linha['id_oferta_disciplina']}','glyphicon glyphicon-wrench','glyphicon glyphicon-education'" . ')" href="#void" style="color:orange">';
-                        $tabela .= '<span id="tipo_' . $linha['id_oferta_disciplina'] . '" class="glyphicon glyphicon-wrench"></span>';
+                        $tabela .= '<a
+                            id="turma_dividida_cor_' . $linha['id_oferta_disciplina'] . '"
+                            href="#void"
+                            title="Turma dividida: não"
+                            onclick="atualizarTurmaDividida(' . $linha['id_oferta_disciplina'] . ', 1)"
+                            style="color:#999">';
+
+                        $tabela .= '<span
+                            id="turma_dividida_' . $linha['id_oferta_disciplina'] . '"
+                            class="glyphicon glyphicon-transfer"></span>';
+
+                        $tabela .= '</a>';
                     }
-                    $tabela .= '</a>';
+
                     $tabela .= '</td>';
 
                     $tabela .= '</tr>';
@@ -169,7 +190,7 @@ class oferta_disciplinaController {
             $tabela .= '<td align="center">' . round((float) $linha_ch['chs_ead'], 2) . '</td>';
             $tabela .= '</tr>';
         }
-                $tabela .= '</tbody>';
+        $tabela .= '</tbody>';
         $tabela .= '</table>';
         $tabela .= '</div>'; // fecha o panel-body
         $tabela .= '</div>'; // fecha o panel
@@ -369,12 +390,17 @@ class oferta_disciplinaController {
     public function inserir() {
         $resultado = false;
         $id_oferta_disciplina = 0;
+
         if ($this->formularioValido()) {
+            $_POST['tipo'] = 'Aula';
+
             $res = $this->oferta_disciplinaM->inserir($_POST);
+
             if ($res) {
                 $this->msg .= '<div class="alert alert-success">';
                 $this->msg .= 'Registro cadastrado com sucesso!';
                 $this->msg .= '</div>';
+
                 $id_oferta_disciplina = $res;
                 $resultado = true;
             } else {
@@ -383,25 +409,12 @@ class oferta_disciplinaController {
                 $this->msg .= '</div>';
             }
         }
-        $resposta = array('resultado' => $resultado, 'msg' => $this->msg, 'id_oferta_disciplina' => $id_oferta_disciplina);
-        return json_encode($resposta);
-    }
 
-    public function atualizar() {
-        $resultado = false;
-        $res = $this->oferta_disciplinaM->atualizar($_POST);
-        if ($res) {
-            $this->msg .= '<div class="alert alert-success">';
-            $this->msg .= 'Registro atualizado com sucesso!';
-            $this->msg .= '</div>';
-            $resultado = true;
-        } else {
-            $this->msg .= '<div class="alert alert-danger">';
-            $this->msg .= 'Erro ao atualizar - Contactar o administrador do sistema';
-            $this->msg .= '</div>';
-        }
-        $resposta = array('resultado' => $resultado, 'msg' => $this->msg);
-        return json_encode($resposta);
+        return json_encode(array(
+            'resultado' => $resultado,
+            'msg' => $this->msg,
+            'id_oferta_disciplina' => $id_oferta_disciplina
+        ));
     }
 
     public function atualizar2() {
@@ -517,6 +530,28 @@ class oferta_disciplinaController {
         return json_encode($resposta);
     }
 
+    public function atualizar_turma_dividida() {
+        $resultado = false;
+
+        $res = $this->oferta_disciplinaM->atualizar_turma_dividida($_POST);
+
+        if ($res) {
+            $this->msg = '<div class="alert alert-success">';
+            $this->msg .= 'Controle de turma dividida atualizado com sucesso!';
+            $this->msg .= '</div>';
+            $resultado = true;
+        } else {
+            $this->msg = '<div class="alert alert-danger">';
+            $this->msg .= 'Erro ao atualizar - Contactar o administrador do sistema';
+            $this->msg .= '</div>';
+        }
+
+        return json_encode(array(
+            'resultado' => $resultado,
+            'msg' => $this->msg
+        ));
+    }
+
     public function carregarDisciplina() {
 
         $select = '<label for="id_disciplina">Disciplina:</label>';
@@ -584,28 +619,6 @@ class oferta_disciplinaController {
         return json_encode($resposta);
     }
 
-    public function carregarTipo() {
-        $select = '<label for="tipo">Tipo:</label>';
-        $select .= '<select id="tipo" name="tipo" class="form-control">';
-
-        $result = $this->oferta_disciplinaM->getTipo();
-        $linha = mysqli_fetch_assoc($result);
-        $enum = str_replace('enum(', '', $linha['Type']);
-        $enum = str_replace(')', '', $enum);
-        $enum = str_replace("'", "", $enum);
-        $nivel = explode(",", $enum);
-
-        foreach ($nivel as $valor) {
-            $select .= "<option value='{$valor}'>";
-            $select .= $valor;
-            $select .= '</option>';
-        }
-        $select .= '</select>';
-        $resposta = array('select' => $select);
-
-        return json_encode($resposta);
-    }
-
     public function getTurmasAtivas() {
 
         $periodo = explode("/", $_POST['periodo']);
@@ -635,7 +648,7 @@ class oferta_disciplinaController {
         if ($_SESSION['perfil'] == 'Professor') {
             $criterios['publicado'] = 1;
         }
-        
+
         if ($_SESSION['perfil'] == 'Coordenador de Curso') {
             $criterios['publicado_coordenador'] = 1;
         }

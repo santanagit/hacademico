@@ -52,36 +52,13 @@ $(document).ready(function () {
 
 });
 
-function replaceClass(id, oldClass, newClass) {
-    //alert(id+" "+oldClass+" "+newClass);
-
-    $('#metodo').val('atualizar_tipo');
-    $('#id_oferta_disciplina').val(id);
-
-    if ($('#tipo_' + id).attr('class') == 'glyphicon glyphicon-education') {
-
-        $('#tipo').val('Preparação aula EAD');
-
-        var elem = $('#tipo_' + id);
-        if (elem.hasClass(oldClass)) {
-            elem.removeClass(oldClass);
-        }
-        elem.addClass(newClass);
-        $('#tipo_cor_' + id).css('color', 'orange');
-
-    } else {
-
-        $('#tipo').val('Aula');
-
-        var elem = $('#tipo_' + id);
-        if (elem.hasClass(newClass)) {
-            elem.removeClass(newClass);
-        }
-        elem.addClass(oldClass);
-        $('#tipo_cor_' + id).css('color', 'blue');
-    }
+function atualizarTurmaDividida(id_oferta_disciplina, valor) {
+    $('#metodo').val('atualizar_turma_dividida');
+    $('#id_oferta_disciplina').val(id_oferta_disciplina);
 
     var dados = $('#formulario').serialize();
+    dados += '&turma_dividida=' + encodeURIComponent(valor);
+
     $.ajax({
         url: 'controller/' + classe + '.php',
         type: 'post',
@@ -89,8 +66,11 @@ function replaceClass(id, oldClass, newClass) {
         data: dados
     }).done(function (resposta) {
         var json = JSON.parse(resposta);
+
         if (json.resultado) {
             listar(json.msg);
+        } else {
+            $('#msg_' + $('#id_turma').val()).html(json.msg);
         }
     });
 }
@@ -332,8 +312,10 @@ function setCH() {
 
 function getTurmasAtivas() {
     $('#metodo').val('getTurmasAtivas');
+
     var dados = $('#formulario').serialize();
-    dados += "&periodo=" + encodeURIComponent($('#id_periodo option:selected').text()); 
+    dados += '&periodo=' + encodeURIComponent($('#id_periodo option:selected').text());
+
     $.ajax({
         url: 'controller/' + classe + '.php',
         type: 'post',
@@ -341,12 +323,12 @@ function getTurmasAtivas() {
         data: dados
     }).done(function (resposta) {
         var json = JSON.parse(resposta);
+
         $('#id_turma_busca').html(json.options).ready(function () {
             listar('');
             carregarComponente('carregarDisciplina', 'div_disciplina');
             carregarComponente('carregarTurma', 'div_turma');
             carregarComponente('carregarProfessor', 'div_professor');
-            carregarComponente('carregarTipo', 'div_tipo');
         });
     });
 }
