@@ -165,11 +165,11 @@ class oferta_disciplinaController {
         while ($linha_ch = mysqli_fetch_assoc($result_ch)) {
             $tabela .= '<tr>';
             $tabela .= '<td>' . $linha_ch['nome'] . '</td>';
-            $tabela .= '<td align="center">' . $linha_ch['chs'] . '</td>';
-            $tabela .= '<td align="center">' . $linha_ch['chs_ead'] . '</td>';
+            $tabela .= '<td align="center">' . round((float) $linha_ch['chs'], 2) . '</td>';
+            $tabela .= '<td align="center">' . round((float) $linha_ch['chs_ead'], 2) . '</td>';
             $tabela .= '</tr>';
         }
-        $tabela .= '</tbody>';
+                $tabela .= '</tbody>';
         $tabela .= '</table>';
         $tabela .= '</div>'; // fecha o panel-body
         $tabela .= '</div>'; // fecha o panel
