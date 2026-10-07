@@ -46,6 +46,7 @@ sessao::validar(array('Coordenador de Ensino', 'Coordenador de Curso'));
             <input type="hidden" name="id_sala" id="id_sala">
             <input type="hidden" name="id_sala_antiga" id="id_sala_antiga">
             <input type="hidden" name="disciplina_antiga" id="disciplina_antiga">
+            <input type="hidden" name="posicao" id="posicao">
 
             <div class="container-fluid">
                 <div class="col-md-12">

@@ -26,7 +26,7 @@ class horarioController {
             $criterios['publicado'] = 1;
         }
         if ($_SESSION['perfil'] == 'Coordenador de Curso') {
-            $criterios['publicado'] = 1;
+            $criterios['publicado_coordenador'] = 1;
         }
         
         $resultado_periodos = $periodoM->listar(array(), array('id_periodo'=>'DESC'),array(),$criterios);        

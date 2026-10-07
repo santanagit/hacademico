@@ -72,7 +72,7 @@ class periodoModel {
         if (count($limit) > 0) {
             $sql .= " LIMIT {$limit['inicio']},{$limit['quantidade']}";
         }
-        //echo $sql;
+        echo $sql;
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);
         $result = $stmt->get_result();
