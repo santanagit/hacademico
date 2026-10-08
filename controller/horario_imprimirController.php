@@ -80,7 +80,7 @@ class horario_imprimirController {
         $primeiro_nome_professor = isset($_POST['primeiro_nome_professor']);
 
         $horarioM = new horarioModel();
-        $result = $horarioM->listar($_POST['id_turma']);
+        $result = $horarioM->listar((int) $_POST['id_turma']);
 
         $tabela = '';
         $turmas = array();
@@ -94,10 +94,17 @@ class horario_imprimirController {
             );
         };
 
-        /*
-         * Consulta o código SIGAA uma vez para cada combinação
-         * de disciplina e curso, mesmo que apareça em várias células.
-         */
+        $nomeProfessor = function ($nome) use ($primeiro_nome_professor) {
+            $nome = trim((string) $nome);
+
+            if ($primeiro_nome_professor) {
+                $partes = preg_split('/\s+/', $nome);
+                return isset($partes[0]) ? $partes[0] : '';
+            }
+
+            return $nome;
+        };
+
         $buscarCodigos = function ($id_disciplina, $id_curso) use (
                 $horarioM,
                 &$cache_codigos
@@ -121,30 +128,31 @@ class horario_imprimirController {
         };
 
         /*
-         * Monta o conteúdo de uma oferta sem alterar
-         * as cores usadas na impressão original.
+         * A primeira linha determina disciplina, sala e cor.
+         * Se houver uma segunda linha da mesma disciplina,
+         * acrescenta somente o seu professor.
          */
-        $montarOferta = function ($linha) use (
+        $montarOferta = function ($linha, $segunda = null) use (
                 $codigo_sigaa,
-                $primeiro_nome_professor,
                 $escapar,
+                $nomeProfessor,
                 $buscarCodigos
         ) {
-            $professor = (string) $linha['professor'];
-
-            if ($primeiro_nome_professor) {
-                $partes = preg_split('/\s+/', trim($professor));
-                $professor = isset($partes[0]) ? $partes[0] : '';
-            }
-
             $html = '<div style="color:blue; font-weight:bold !important">';
             $html .= $escapar($linha['disciplina']);
             $html .= '</div>';
 
             $html .= '<div style="color:green !important">';
-            $html .= $escapar($professor);
+            $html .= $escapar($nomeProfessor($linha['professor']));
             $html .= '</div>';
 
+            if ($segunda !== null) {
+                $html .= '<div style="color:green !important">';
+                $html .= $escapar($nomeProfessor($segunda['professor']));
+                $html .= '</div>';
+            }
+
+            // Na apresentação conjunta, usa somente a sala da esquerda.
             $html .= '<div style="color:brown !important">';
             $html .= $escapar($linha['sala']);
             $html .= '</div>';
@@ -165,26 +173,26 @@ class horario_imprimirController {
             return $html;
         };
 
-        /*
-         * Agrupa os registros para impedir que a segunda posição
-         * seja impressa na coluna do dia seguinte.
-         */
         $tem_horarios = $result->num_rows > 0;
 
         while ($linha = $result->fetch_assoc()) {
             $id_dia = (int) $linha['id_dia'];
 
-            /*
-             * A impressão original apresenta segunda a sexta.
-             * Sábado não deve ser deslocado para outra coluna.
-             */
+            // Preserva os cinco dias úteis do relatório.
             if ($id_dia < 2 || $id_dia > 6) {
                 continue;
             }
 
+            if (!isset($linha['posicao'])) {
+                throw new RuntimeException(
+                                'A consulta horarioModel::listar() precisa retornar ' .
+                                'horario.posicao para imprimir as turmas divididas.'
+                        );
+            }
+
             $id_turma = (int) $linha['id_turma'];
             $id_hora = (int) $linha['id_hora'];
-            $posicao = isset($linha['posicao']) ? (int) $linha['posicao'] : 1;
+            $posicao = (int) $linha['posicao'];
 
             if (!isset($turmas[$id_turma])) {
                 $turmas[$id_turma] = array(
@@ -212,39 +220,33 @@ class horario_imprimirController {
         if ($tem_horarios) {
             $horas_intervalo = array(9, 13, 15, 18, 20);
 
-            foreach ($turmas as $turma) {
-                $tabela .= '<table class="table table-bordered">' . "\n";
-                $tabela .= '<thead>' . "\n";
+            $dias = array(
+                2 => 'Segunda',
+                3 => 'Terça',
+                4 => 'Quarta',
+                5 => 'Quinta',
+                6 => 'Sexta'
+            );
 
-                $tabela .= '<tr>' . "\n";
+            foreach ($turmas as $turma) {
+                $tabela .= '<table class="table table-bordered">';
+                $tabela .= '<thead><tr>';
                 $tabela .= '<th colspan="6" ';
                 $tabela .= 'style="background-color:#D9EDF7 !important">';
                 $tabela .= '<center>' . $escapar($turma['nome']) . '</center>';
-                $tabela .= '</th>' . "\n";
-                $tabela .= '</tr>' . "\n";
+                $tabela .= '</th></tr><tr>';
 
-                $tabela .= '<tr>' . "\n";
                 $tabela .= '<th width="10%" ';
                 $tabela .= 'style="background-color:#DFF0D8 !important">';
-                $tabela .= 'Horário</th>' . "\n";
-
-                $dias = array(
-                    2 => 'Segunda',
-                    3 => 'Terça',
-                    4 => 'Quarta',
-                    5 => 'Quinta',
-                    6 => 'Sexta'
-                );
+                $tabela .= 'Horário</th>';
 
                 foreach ($dias as $nome_dia) {
                     $tabela .= '<th width="18%" ';
                     $tabela .= 'style="background-color:#DFF0D8 !important">';
-                    $tabela .= $nome_dia . '</th>' . "\n";
+                    $tabela .= $nome_dia . '</th>';
                 }
 
-                $tabela .= '</tr>' . "\n";
-                $tabela .= '</thead>' . "\n";
-                $tabela .= '<tbody>' . "\n";
+                $tabela .= '</tr></thead><tbody>';
 
                 ksort($turma['horas'], SORT_NUMERIC);
                 $clinha = 0;
@@ -256,28 +258,50 @@ class horario_imprimirController {
                             in_array((int) $id_hora, $horas_intervalo, true) &&
                             $clinha > 2
                     ) {
-                        $tabela .= '<tr align="center">' . "\n";
+                        $tabela .= '<tr align="center">';
                         $tabela .= '<td colspan="6"><b>Intervalo</b></td>';
-                        $tabela .= '</tr>' . "\n";
+                        $tabela .= '</tr>';
                     }
 
-                    $tabela .= '<tr>' . "\n";
-                    $tabela .= '<td><b>';
+                    $tabela .= '<tr><td><b>';
                     $tabela .= $escapar($hora['horario']);
-                    $tabela .= '</b></td>' . "\n";
+                    $tabela .= '</b></td>';
 
                     foreach ($dias as $id_dia => $nome_dia) {
                         $posicoes = isset($hora['dias'][$id_dia]) ? $hora['dias'][$id_dia] : array();
 
                         if (count($posicoes) === 0) {
-                            $tabela .= '<td></td>' . "\n";
+                            $tabela .= '<td></td>';
                             continue;
                         }
 
                         /*
-                         * Sem posição 2: mantém a célula original,
-                         * com a cor do professor no próprio TD.
+                         * Mesma disciplina nas duas posições:
+                         * - disciplina uma vez;
+                         * - professores um abaixo do outro;
+                         * - sala e cor da esquerda.
+                         *
+                         * Compara o ID, não o nome da disciplina.
                          */
+                        $mesma_disciplina = isset($posicoes[1], $posicoes[2]) &&
+                                (int) $posicoes[1]['id_disciplina'] ===
+                                (int) $posicoes[2]['id_disciplina'];
+
+                        if ($mesma_disciplina) {
+                            $esquerda = $posicoes[1];
+                            $direita = $posicoes[2];
+
+                            $tabela .= '<td style="background-color:';
+                            $tabela .= $escapar($esquerda['cor']);
+                            $tabela .= ' !important">';
+
+                            $tabela .= $montarOferta($esquerda, $direita);
+
+                            $tabela .= '</td>';
+                            continue;
+                        }
+
+                        // Oferta única: ocupa toda a célula.
                         if (!isset($posicoes[2])) {
                             $linha = isset($posicoes[1]) ? $posicoes[1] : reset($posicoes);
 
@@ -285,15 +309,14 @@ class horario_imprimirController {
                             $tabela .= $escapar($linha['cor']);
                             $tabela .= ' !important">';
                             $tabela .= $montarOferta($linha);
-                            $tabela .= '</td>' . "\n";
+                            $tabela .= '</td>';
 
                             continue;
                         }
 
                         /*
-                         * Com posição 2: tabela interna para preservar
-                         * o alinhamento lado a lado também na impressão.
-                         * Cada posição conserva a sua própria cor e sala.
+                         * Disciplinas diferentes:
+                         * mantém as duas posições lado a lado.
                          */
                         $tabela .= '<td style="padding:0">';
                         $tabela .= '<table style="width:100%;';
@@ -321,23 +344,17 @@ class horario_imprimirController {
                             }
                         }
 
-                        $tabela .= '</tr></tbody></table>';
-                        $tabela .= '</td>' . "\n";
+                        $tabela .= '</tr></tbody></table></td>';
                     }
 
-                    $tabela .= '</tr>' . "\n";
+                    $tabela .= '</tr>';
                 }
 
-                $tabela .= '</tbody>' . "\n";
-                $tabela .= '</table>' . "\n";
+                $tabela .= '</tbody></table>';
             }
         } else {
-            /*
-             * Preserva a apresentação das disciplinas EAD
-             * quando a turma não possui horários cadastrados.
-             */
             $result_ead = $horarioM->getDisciplinasTurmaEAD(
-                    $_POST['id_turma']
+                    (int) $_POST['id_turma']
             );
 
             if ($result_ead->num_rows > 0) {
@@ -347,8 +364,7 @@ class horario_imprimirController {
 
                 $tabela .= '<tr class="success">';
                 $tabela .= '<th colspan="5" style="text-align:center">';
-                $tabela .= 'Disciplinas/Professor</th>';
-                $tabela .= '</tr>';
+                $tabela .= 'Disciplinas/Professor</th></tr>';
 
                 $tabela .= '<tr class="info">';
                 $tabela .= '<th width="10%">Módulo</th>';
@@ -356,9 +372,7 @@ class horario_imprimirController {
                 $tabela .= '<th width="35%">Professor</th>';
                 $tabela .= '<th width="10%">CHS</th>';
                 $tabela .= '<th width="10%">CHT</th>';
-                $tabela .= '</tr>';
-
-                $tabela .= '</thead><tbody>';
+                $tabela .= '</tr></thead><tbody>';
 
                 while ($linha_ead = $result_ead->fetch_assoc()) {
                     $codigos = $buscarCodigos(
@@ -367,6 +381,7 @@ class horario_imprimirController {
                     );
 
                     $tabela .= '<tr>';
+
                     $tabela .= '<td>';
                     $tabela .= $escapar($linha_ead['modulo']);
                     $tabela .= '</td>';
@@ -387,6 +402,7 @@ class horario_imprimirController {
                     $tabela .= '<td>';
                     $tabela .= $escapar($linha_ead['cht']);
                     $tabela .= '</td>';
+
                     $tabela .= '</tr>';
                 }
 
