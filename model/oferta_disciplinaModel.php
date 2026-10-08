@@ -162,10 +162,12 @@ class oferta_disciplinaModel {
     }
 
     public function inserir($campos) {
-        if (!isset($campos['id_usuario']) || trim($campos['id_usuario']) === '') {
+        $id_usuario_post = isset($campos['id_usuario']) ? trim((string) $campos['id_usuario']) : '';
+
+        if ($id_usuario_post === '' || strtoupper($id_usuario_post) === 'NULL') {
             $id_usuario = 'NULL';
         } else {
-            $id_usuario = (int) $campos['id_usuario'];
+            $id_usuario = (int) $id_usuario_post;
         }
 
         $id_disciplina = (int) $campos['id_disciplina'];
@@ -212,17 +214,19 @@ class oferta_disciplinaModel {
     }
 
     public function atualizar($campos) {
-        if (!isset($campos['id_usuario']) || trim($campos['id_usuario']) === '') {
+        $id_usuario_post = isset($campos['id_usuario']) ? trim((string) $campos['id_usuario']) : '';
+
+        if ($id_usuario_post === '' || strtoupper($id_usuario_post) === 'NULL') {
             $usuario = "id_usuario = NULL";
         } else {
-            $usuario = "id_usuario = " . (int) $campos['id_usuario'];
+            $usuario = "id_usuario = " . (int) $id_usuario_post;
         }
 
         $id_oferta_disciplina = (int) $campos['id_oferta_disciplina'];
 
         $sql = "UPDATE oferta_disciplina
-                SET $usuario
-                WHERE id_oferta_disciplina = $id_oferta_disciplina";
+            SET $usuario
+            WHERE id_oferta_disciplina = $id_oferta_disciplina";
 
         $stmt = $this->bd->prepare($sql);
         return $stmt->execute() or die($this->bd->error);
@@ -255,27 +259,112 @@ class oferta_disciplinaModel {
         return $stmt->execute() or die($this->bd->error);
     }
 
-    public function atualizar_tipo($campos) {
-        $id_oferta_disciplina = (int) $campos['id_oferta_disciplina'];
-
-        $sql = "UPDATE oferta_disciplina
-                SET tipo = 'Aula'
-                WHERE id_oferta_disciplina = $id_oferta_disciplina";
-
-        $stmt = $this->bd->prepare($sql);
-        return $stmt->execute() or die($this->bd->error);
-    }
-
     public function atualizar_turma_dividida($campos) {
-        $id_oferta_disciplina = (int) $campos['id_oferta_disciplina'];
+        $id_oferta_disciplina = isset($campos['id_oferta_disciplina']) ? (int) $campos['id_oferta_disciplina'] : 0;
+
         $turma_dividida = !empty($campos['turma_dividida']) ? 1 : 0;
 
-        $sql = "UPDATE oferta_disciplina
-                SET turma_dividida = $turma_dividida
-                WHERE id_oferta_disciplina = $id_oferta_disciplina";
+        if ($id_oferta_disciplina <= 0) {
+            return false;
+        }
 
-        $stmt = $this->bd->prepare($sql);
-        return $stmt->execute() or die($this->bd->error);
+        try {
+            if (!$this->bd->begin_transaction()) {
+                throw new RuntimeException('Erro ao iniciar a transação.');
+            }
+
+            $sql = "UPDATE oferta_disciplina
+                    SET turma_dividida = ?
+                    WHERE id_oferta_disciplina = ?";
+
+            $stmt = $this->bd->prepare($sql);
+
+            if (!$stmt) {
+                throw new RuntimeException($this->bd->error);
+            }
+
+            $stmt->bind_param("ii", $turma_dividida, $id_oferta_disciplina);
+
+            if (!$stmt->execute()) {
+                throw new RuntimeException($stmt->error);
+            }
+
+            $stmt->close();
+
+            if ($turma_dividida === 0) {
+                /*
+                 * Exclui a posição 2 das células em que a oferta
+                 * desativada ocupa a posição 1.
+                 *
+                 * A oferta da posição 2 pode ser outra, mas deve
+                 * pertencer à mesma turma.
+                 */
+                $sql = "DELETE direita
+                    FROM horario AS direita
+                    INNER JOIN oferta_disciplina AS oferta_direita
+                        ON direita.id_oferta_disciplina =
+                           oferta_direita.id_oferta_disciplina
+                    INNER JOIN horario AS esquerda
+                        ON esquerda.id_dia = direita.id_dia
+                        AND esquerda.id_hora = direita.id_hora
+                        AND esquerda.posicao = 1
+                    INNER JOIN oferta_disciplina AS oferta_esquerda
+                        ON esquerda.id_oferta_disciplina =
+                           oferta_esquerda.id_oferta_disciplina
+                        AND oferta_esquerda.id_turma =
+                            oferta_direita.id_turma
+                    WHERE
+                        direita.posicao = 2
+                        AND esquerda.id_oferta_disciplina = ?";
+
+                $stmt = $this->bd->prepare($sql);
+
+                if (!$stmt) {
+                    throw new RuntimeException($this->bd->error);
+                }
+
+                $stmt->bind_param("i", $id_oferta_disciplina);
+
+                if (!$stmt->execute()) {
+                    throw new RuntimeException($stmt->error);
+                }
+
+                $stmt->close();
+
+                /*
+                 * Exclui também os horários em que a própria
+                 * oferta desativada ocupa a posição 2.
+                 */
+                $sql = "DELETE FROM horario
+                    WHERE
+                        posicao = 2
+                        AND id_oferta_disciplina = ?";
+
+                $stmt = $this->bd->prepare($sql);
+
+                if (!$stmt) {
+                    throw new RuntimeException($this->bd->error);
+                }
+
+                $stmt->bind_param("i", $id_oferta_disciplina);
+
+                if (!$stmt->execute()) {
+                    throw new RuntimeException($stmt->error);
+                }
+
+                $stmt->close();
+            }
+
+            if (!$this->bd->commit()) {
+                throw new RuntimeException('Erro ao confirmar a transação.');
+            }
+
+            return true;
+        } catch (Throwable $e) {
+            $this->bd->rollback();
+            error_log('Erro ao atualizar turma dividida: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function deletar($id_oferta_disciplina) {
@@ -411,63 +500,31 @@ class oferta_disciplinaModel {
         $id_turma = (int) $id_turma;
 
         $sql = "SELECT
-                    oferta_disciplina.id_oferta_disciplina,
-                    oferta_disciplina.id_turma,
-                    oferta_disciplina.id_usuario,
-                    oferta_disciplina.id_disciplina,
-                    disciplina.descricao AS disciplina,
-                    disciplina.chs,
-                    disciplina.chs_ead,
-                    disciplina.cht,
-                    usuario.nome AS professor,
-                    oferta_disciplina.tipo,
-                    oferta_disciplina.turma_dividida
-                FROM
-                    oferta_disciplina
-                    INNER JOIN disciplina
-                        ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
-                    LEFT JOIN usuario
-                        ON oferta_disciplina.id_usuario = usuario.id_usuario
-                WHERE
-                    oferta_disciplina.id_turma = $id_turma
-                ORDER BY
-                    disciplina.descricao,
-                    usuario.nome";
+                oferta_disciplina.id_oferta_disciplina,
+                oferta_disciplina.id_turma,
+                oferta_disciplina.id_usuario,
+                oferta_disciplina.id_disciplina,
+                disciplina.descricao AS disciplina,
+                oferta_disciplina.chs AS chs,
+                disciplina.chs_ead AS chs_ead,
+                disciplina.cht AS cht,
+                usuario.nome AS professor,
+                oferta_disciplina.tipo,
+                oferta_disciplina.turma_dividida
+            FROM
+                oferta_disciplina
+                INNER JOIN disciplina
+                    ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
+                LEFT JOIN usuario
+                    ON oferta_disciplina.id_usuario = usuario.id_usuario
+            WHERE
+                oferta_disciplina.id_turma = ?
+            ORDER BY
+                disciplina.descricao,
+                usuario.nome";
 
         $stmt = $this->bd->prepare($sql);
-        $stmt->execute() or die($this->bd->error);
-
-        return $stmt->get_result();
-    }
-
-    public function getDisciplinasOfertadasPeriodo($id_periodo) {
-        $id_periodo = (int) $id_periodo;
-
-        $sql = "SELECT
-                    oferta_disciplina.id_oferta_disciplina,
-                    oferta_disciplina.id_turma,
-                    oferta_disciplina.id_usuario,
-                    oferta_disciplina.id_disciplina,
-                    disciplina.descricao AS disciplina,
-                    disciplina.chs,
-                    disciplina.chs_ead,
-                    disciplina.cht,
-                    usuario.nome AS professor,
-                    turma.descricao,
-                    oferta_disciplina.tipo,
-                    oferta_disciplina.turma_dividida
-                FROM
-                    oferta_disciplina
-                    INNER JOIN disciplina
-                        ON oferta_disciplina.id_disciplina = disciplina.id_disciplina
-                    INNER JOIN turma
-                        ON oferta_disciplina.id_turma = turma.id_turma
-                    LEFT JOIN usuario
-                        ON oferta_disciplina.id_usuario = usuario.id_usuario
-                WHERE turma.id_periodo = $id_periodo
-                ORDER BY disciplina.descricao";
-
-        $stmt = $this->bd->prepare($sql);
+        $stmt->bind_param("i", $id_turma);
         $stmt->execute() or die($this->bd->error);
 
         return $stmt->get_result();
@@ -519,15 +576,6 @@ class oferta_disciplinaModel {
 
         $sql .= "oferta_disciplina.id_usuario = $id_usuario
                  ORDER BY disciplina.descricao";
-
-        $stmt = $this->bd->prepare($sql);
-        $stmt->execute() or die($this->bd->error);
-
-        return $stmt->get_result();
-    }
-
-    public function getTipo() {
-        $sql = "SHOW COLUMNS FROM oferta_disciplina WHERE FIELD = 'tipo'";
 
         $stmt = $this->bd->prepare($sql);
         $stmt->execute() or die($this->bd->error);

@@ -131,7 +131,7 @@ class oferta_disciplinaController {
                             id="turma_dividida_cor_' . $linha['id_oferta_disciplina'] . '"
                             href="#void"
                             title="Turma dividida: sim"
-                            onclick="atualizarTurmaDividida(' . $linha['id_oferta_disciplina'] . ', 0)"
+                            onclick="atualizarTurmaDividida(' . $linha['id_oferta_disciplina'] . ', 0, ' . $linha['id_turma'] . ')"
                             style="color:green">';
 
                         $tabela .= '<span
@@ -144,7 +144,7 @@ class oferta_disciplinaController {
                             id="turma_dividida_cor_' . $linha['id_oferta_disciplina'] . '"
                             href="#void"
                             title="Turma dividida: não"
-                            onclick="atualizarTurmaDividida(' . $linha['id_oferta_disciplina'] . ', 1)"
+                            onclick="atualizarTurmaDividida(' . $linha['id_oferta_disciplina'] . ', 1, ' . $linha['id_turma'] . ')"
                             style="color:#999">';
 
                         $tabela .= '<span
@@ -224,7 +224,7 @@ class oferta_disciplinaController {
 
             // SE NÃO HOUVER HORÁRIO(S) PARA OFERTA DE DISCIPLINA NÃO HAVERÀ CHOQUE
             if (mysqli_num_rows($result_horarios_oferta) == 0) {
-                $tabela .= '<div class="alert alert-info">Não existe horário associado a esta oferta de diciplina! Deseja realmente realizar essa operação? </div>';
+                $tabela .= '<div class="alert alert-info">Não existe horário associado a esta oferta de disciplina! Deseja realmente realizar essa operação? </div>';
                 $tabela .= '<button type="button" style="margin:5px" class="btn btn-success" onclick="atualizar()">Sim</button>';
                 $tabela .= '<button type="button" style="margin:5px" class="btn btn-danger" data-dismiss="modal">Não</button>';
             } else {
@@ -286,7 +286,7 @@ class oferta_disciplinaController {
                     $tabela .= '<button type="button" style="margin:5px;margin-bottom:15px"  class="btn btn-danger" data-dismiss="modal">Não</button>';
 
                     // Será verificado os horários da disciplina ofertada com o professor antigo
-                    // chocam com os horários das diciplinas do professor novo.
+                    // chocam com os horários das disciplinas do professor novo.
                 } else {
 
                     $i = 0;
@@ -417,6 +417,23 @@ class oferta_disciplinaController {
         ));
     }
 
+    public function atualizar() {
+        $resultado = false;
+        $res = $this->oferta_disciplinaM->atualizar($_POST);
+        if ($res) {
+            $this->msg .= '<div class="alert alert-success">';
+            $this->msg .= 'Registro atualizado com sucesso!';
+            $this->msg .= '</div>';
+            $resultado = true;
+        } else {
+            $this->msg .= '<div class="alert alert-danger">';
+            $this->msg .= 'Erro ao atualizar - Contactar o administrador do sistema';
+            $this->msg .= '</div>';
+        }
+        $resposta = array('resultado' => $resultado, 'msg' => $this->msg);
+        return json_encode($resposta);
+    }
+
     public function atualizar2() {
         $resultado = false;
 
@@ -431,7 +448,7 @@ class oferta_disciplinaController {
         if ($res) {
             $this->msg .= '<div class="alert alert-success">';
             $this->msg .= $msg;
-            $this->msg .= 'Oferta de diciplina atualizada com sucesso!';
+            $this->msg .= 'Oferta de disciplina atualizada com sucesso!';
             $this->msg .= '</div>';
             $resultado = true;
         } else {
@@ -499,23 +516,6 @@ class oferta_disciplinaController {
     public function atualizar_chs_ead() {
         $resultado = false;
         $res = $this->oferta_disciplinaM->atualizar_chs_ead($_POST);
-        if ($res) {
-            $this->msg .= '<div class="alert alert-success">';
-            $this->msg .= 'Registro atualizado com sucesso!';
-            $this->msg .= '</div>';
-            $resultado = true;
-        } else {
-            $this->msg .= '<div class="alert alert-danger">';
-            $this->msg .= 'Erro ao atualizar - Contactar o administrador do sistema';
-            $this->msg .= '</div>';
-        }
-        $resposta = array('resultado' => $resultado, 'msg' => $this->msg);
-        return json_encode($resposta);
-    }
-
-    public function atualizar_tipo() {
-        $resultado = false;
-        $res = $this->oferta_disciplinaM->atualizar_tipo($_POST);
         if ($res) {
             $this->msg .= '<div class="alert alert-success">';
             $this->msg .= 'Registro atualizado com sucesso!';

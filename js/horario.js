@@ -1,228 +1,308 @@
 var classe = 'horarioController';
+var horarioCarregando = false;
+var horarioGravacoes = 0;
+var horarioCelulasOcupadas = {};
 
 $(document).ready(function () {
     carregarPeriodo();
-    $('#btn_buscar').click(function () {
+
+    $('#btn_buscar').on('click', function (event) {
+        event.preventDefault();
         getMoldura();
     });
 });
 
-function carregarPeriodo() {
-    $('#metodo').val('carregarPeriodo');
-    var dados = $('#formulario').serialize();
-    $.ajax({
+function horarioEscapar(texto) {
+    return $('<div>').text(String(texto)).html();
+}
+
+function horarioMensagem(texto, tipo) {
+    var icone = 'info-sign';
+
+    if (tipo === 'success') {
+        icone = 'ok';
+    } else if (tipo === 'warning') {
+        icone = 'warning-sign';
+    }
+
+    return '<span class="glyphicon glyphicon glyphicon-' + icone +
+        ' alert-' + tipo +
+        ' btn-sm" style="width:100%; text-align:center">&nbsp;' +
+        horarioEscapar(texto) + '</span>';
+}
+
+function horarioFiltros() {
+    return {
+        id_periodo: $('#id_periodo').val() || '',
+        periodo: $('#id_periodo option:selected').text(),
+        turno: $('#turno').val() || 'Integral'
+    };
+}
+
+function horarioRequisicao(dados) {
+    return $.ajax({
         url: 'controller/' + classe + '.php',
-        type: 'post',
-        dataType: 'html',
+        type: 'POST',
+        dataType: 'json',
         data: dados
-    }).done(function (resposta) {
-        var json = JSON.parse(resposta);
+    });
+}
 
-        $('#div_periodo').append(json.select).ready(function () {
-            getMoldura();
-        });
+function horarioInicializarSeletores(container) {
+    $(container).find('select').each(function () {
+        this.oldvalue = this.value;
+    });
+}
 
+function horarioErroAjax(xhr) {
+    if (xhr.responseJSON && xhr.responseJSON.msg) {
+        return xhr.responseJSON.msg;
+    }
+
+    console.error(
+        'Resposta inválida ou falha HTTP no horário:',
+        xhr.status,
+        xhr.responseText
+    );
+
+    return horarioMensagem(
+        'Falha na comunicação ou resposta inválida do servidor. HTTP ' +
+        xhr.status +
+        '. Consulte o console do navegador e o log do PHP.',
+        'warning'
+    );
+}
+
+function carregarPeriodo() {
+    horarioRequisicao({
+        metodo: 'carregarPeriodo'
+    }).done(function (json) {
+        if (json.resultado === 'ERRO') {
+            $('#msg').html(json.msg);
+            return;
+        }
+
+        $('#div_periodo').html(json.select);
+        getMoldura();
+    }).fail(function (xhr) {
+        $('#msg').html(horarioErroAjax(xhr));
     });
 }
 
 function getMoldura() {
-    $('#metodo').val('getMoldura');
-    var dados = $('#formulario').serialize();
-    dados += "&periodo=" + encodeURIComponent($('#id_periodo option:selected').text());
-    $.ajax({
-        url: 'controller/' + classe + '.php',
-        type: 'post',
-        dataType: 'html',
-        data: dados
-    }).done(function (resposta) {
-        var json = JSON.parse(resposta);
-        $('#moldura').html(json.moldura);
+    if (horarioCarregando || horarioGravacoes > 0) {
+        return;
+    }
 
-        $('select').each(function (index, value) {
-            var id = $(this).attr('id');
-            var valor = $('#' + id).val();
-            var vetor = id.split('_');
-            if (valor != '') {
-                $('#m_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3]).html('<span class="glyphicon glyphicon glyphicon-info-sign alert-info btn-sm" style="width:100%; text-align:center">&nbsp;</span>');
-            }
-        });
+    horarioCarregando = true;
+    $('#btn_buscar').prop('disabled', true);
+
+    var dados = horarioFiltros();
+    dados.metodo = 'getMoldura';
+
+    horarioRequisicao(dados).done(function (json) {
+        if (json.resultado === 'ERRO') {
+            $('#msg').html(json.msg);
+            return;
+        }
+
+        $('#moldura').html(json.moldura);
+        horarioInicializarSeletores('#moldura');
+        $('#msg').empty();
+    }).fail(function (xhr) {
+        $('#msg').html(horarioErroAjax(xhr));
+    }).always(function () {
+        horarioCarregando = false;
+        $('#btn_buscar').prop('disabled', false);
     });
 }
 
 function setDisciplina(oferta) {
-    var id = oferta.id;
-    var valor = oferta.value;
-    var vetor = id.split('_');
-    var valor = oferta.value;
-    var vetor2 = valor.split('_');
-    $("#disciplina_antiga").val(vetor[1] + '_' + vetor2[2]);
+    oferta.oldvalue = oferta.value;
+
+    var partes = oferta.id.split('_');
+    var valores = oferta.value.split('_');
+
+    $('#disciplina_antiga').val(
+        oferta.value !== '' ? partes[1] + '_' + valores[2] : ''
+    );
+}
+
+function horarioNumero(elemento) {
+    var numero = parseFloat($(elemento).text().replace(',', '.'));
+    return isNaN(numero) ? 0 : numero;
+}
+
+function horarioAtualizarContadores(deltas) {
+    $.each(deltas || {}, function (chave, delta) {
+        var chs = document.getElementById(chave);
+        var ead = document.getElementById('ead_' + chave);
+        var prevista = document.getElementById('chs_disciplina_' + chave);
+        var previstaEad = document.getElementById('chs_ead_disciplina_' + chave);
+
+        if (chs && prevista) {
+            var total = horarioNumero(chs) + Number(delta.chs);
+            $(chs).text(total).css(
+                'color',
+                total === horarioNumero(prevista) ? 'blue' : 'red'
+            );
+        }
+
+        if (ead && previstaEad) {
+            var totalEad = horarioNumero(ead) + Number(delta.ead);
+            $(ead).text(totalEad).css(
+                'color',
+                totalEad === horarioNumero(previstaEad) ? 'green' : 'red'
+            );
+        }
+    });
+}
+
+function horarioGravar(elemento, alteracaoSala) {
+    var partes = elemento.id.split('_');
+    var chave = partes[1] + '_' + partes[2] + '_' + partes[3];
+    var posicao = partes[4] ? partes[4] : '1';
+
+    var container = $('#c_' + chave);
+    var mensagem = $('#m_' + chave);
+    var oferta = $('#d_' + chave + '_' + posicao);
+    var sala = $('#s_' + chave + '_' + posicao);
+
+    var valorAntigo = typeof elemento.oldvalue !== 'undefined'
+        ? elemento.oldvalue
+        : '';
+
+    if (horarioCelulasOcupadas[chave] || horarioCarregando) {
+        elemento.value = valorAntigo;
+        return;
+    }
+
+    if (alteracaoSala && oferta.val() === '') {
+        elemento.oldvalue = elemento.value;
+        return;
+    }
+
+    if (oferta.val() !== '' && !sala.val()) {
+        elemento.value = valorAntigo;
+
+        mensagem.html(horarioMensagem(
+            'Preencha o campo sala de aula!',
+            'warning'
+        ));
+
+        return;
+    }
+
+    var valores = (oferta.val() || '').split('_');
+    var dados = horarioFiltros();
+
+    dados.metodo = 'gravar';
+    dados.id_turma = partes[1];
+    dados.id_dia = partes[2];
+    dados.id_hora = partes[3];
+    dados.posicao = posicao;
+    dados.id_oferta_disciplina = valores[0] || '';
+    dados.id_sala = sala.val() || '';
+
+    horarioCelulasOcupadas[chave] = true;
+    horarioGravacoes++;
+
+    container.find('select').prop('disabled', true);
+    $('#btn_buscar').prop('disabled', true);
+    $('#id_periodo, #turno').prop('disabled', true);
+
+    horarioRequisicao(dados).done(function (json) {
+        if (!json || typeof json.resultado === 'undefined') {
+            elemento.value = valorAntigo;
+
+            mensagem.html(horarioMensagem(
+                'O servidor retornou uma resposta inesperada.',
+                'warning'
+            ));
+
+            console.error('Resposta inesperada:', json);
+            alert('Resposta inesperada do servidor. Consulte o console.');
+
+            return;
+        }
+
+        mensagem.html(json.msg || horarioMensagem('', 'info'));
+
+        if (json.resultado !== 'OK') {
+            elemento.value = valorAntigo;
+
+            if (json.erro_tecnico) {
+                console.error(json.erro_tecnico);
+                alert(json.erro_tecnico);
+            }
+
+            return;
+        }
+
+        horarioAtualizarContadores(json.deltas || {});
+        container.html(json.celula);
+        horarioInicializarSeletores(container);
+    }).fail(function (xhr, textStatus, errorThrown) {
+        elemento.value = valorAntigo;
+
+        var json = xhr.responseJSON;
+
+        if (!json && xhr.responseText) {
+            try {
+                json = JSON.parse(xhr.responseText);
+            } catch (erroParse) {
+                json = null;
+            }
+        }
+
+        if (json && json.msg) {
+            mensagem.html(json.msg);
+        } else {
+            mensagem.html(horarioMensagem(
+                'Falha ao processar a gravação. HTTP ' +
+                xhr.status + '. O detalhe técnico foi exibido no alerta.',
+                'warning'
+            ));
+        }
+
+        var detalhes = json && json.erro_tecnico
+            ? json.erro_tecnico
+            : (xhr.responseText || errorThrown || textStatus);
+
+        console.error(
+            'Erro na gravação do horário:',
+            {
+                http: xhr.status,
+                status: textStatus,
+                erro: errorThrown,
+                resposta: xhr.responseText,
+                dados: dados
+            }
+        );
+
+        alert(
+            'Erro ao gravar horário\n\n' +
+            'HTTP: ' + xhr.status + '\n' +
+            'Status: ' + textStatus + '\n\n' +
+            detalhes
+        );
+    }).always(function () {
+        delete horarioCelulasOcupadas[chave];
+        horarioGravacoes--;
+
+        container.find('select').prop('disabled', false);
+
+        if (horarioGravacoes === 0) {
+            $('#btn_buscar').prop('disabled', false);
+            $('#id_periodo, #turno').prop('disabled', false);
+        }
+    });
 }
 
 function gravarOferta(oferta) {
-
-    var id = oferta.id;
-    var valor = oferta.value;
-    var vetor = id.split('_');
-    var vetor2 = valor.split('_');
-    var id_disciplina_antiga = $("#disciplina_antiga").val();
-    var id_disciplina_nova = vetor[1] + '_' + vetor2[2];
-
-    var sala = $('#s_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3]);
-    if (sala.val() == '') {
-        alert('Preencha o campo sala de aula!');
-        oferta.value = '';
-    } else {
-
-        $('#id_turma').val(vetor[1]);
-        $('#id_dia').val(vetor[2]);
-        $('#id_hora').val(vetor[3]);
-        $('#id_oferta_disciplina').val(vetor2[0]);
-        $('#id_usuario').val(vetor2[1]);
-        $('#id_sala').val(sala.val());
-
-        $('#metodo').val('existeChoque');
-        var dados = $('#formulario').serialize();
-        dados += "&periodo=" + encodeURIComponent($('#id_periodo option:selected').text());
-        $.ajax({
-            url: 'controller/' + classe + '.php',
-            type: 'post',
-            dataType: 'html',
-            data: dados
-        }).done(function (resposta) {
-            var json = JSON.parse(resposta);
-            if (json.resultado) {
-                $('#m_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3]).html(json.msg);
-                $('#' + oferta.id).val('');
-            } else {
-                $('#metodo').val('gravar');
-                var dados = $('#formulario').serialize();
-                $.ajax({
-                    url: 'controller/' + classe + '.php',
-                    type: 'post',
-                    dataType: 'html',
-                    data: dados
-                }).done(function (resposta) {
-                    var json = JSON.parse(resposta);
-                    $('#m_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3]).html(json.msg);
-
-                    //alert("ID Disciplina antiga: "+id_disciplina_antiga+"\nID Disciplina nova: "+id_disciplina_nova);
-                    if (id_disciplina_nova !== id_disciplina_antiga) {
-                        if (id_disciplina_antiga !== '') {
-                            $('#' + id_disciplina_antiga).html($('#' + id_disciplina_antiga).html() - 1);
-
-                            var chs_disciplina = parseInt($('#chs_disciplina_'+ id_disciplina_antiga).html());
-                            if (($('#' + id_disciplina_antiga).html() * 1) == chs_disciplina) {
-                                $('#' + id_disciplina_antiga).css({'color':'blue'});
-                            } else {
-                                $('#' + id_disciplina_antiga).css({'color':'red'});
-                            }
-
-                            if ($('#s_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3] + ' option:selected').text() === 'EAD') {
-                                $('#ead_' + id_disciplina_antiga).html($('#ead_' + id_disciplina_antiga).html() - 1);
-                            }
-                            
-                            var chs_ead_disciplina = parseInt($('#chs_ead_disciplina_'+ id_disciplina_antiga).html());
-                            //alert(chs_ead_disciplina+' '+($('#ead_' + id_disciplina_antiga).html() * 1));
-                            if ( ($('#ead_' + id_disciplina_antiga).html() * 1) == chs_ead_disciplina) {
-                                $('#ead_' + id_disciplina_antiga).css({'color':'green'});
-                            } else {
-                                $('#ead_' + id_disciplina_antiga).css({'color':'red'});
-                            }                            
-                        }
-                        if (id_disciplina_nova !== '') {
-                            var chs = parseInt($('#' + id_disciplina_nova).html());
-                            var chs_ead = parseInt($('#ead_' + id_disciplina_nova).html());
-                            $('#' + id_disciplina_nova).html(chs + 1);
-                            
-                            var chs_disciplina = parseInt($('#chs_disciplina_'+ id_disciplina_nova).html());
-                            if ((chs+1) == chs_disciplina) {
-                                $('#' + id_disciplina_nova).css({'color':'blue'});
-                            } else {
-                                $('#' + id_disciplina_nova).css({'color':'red'});
-                            }
-                            
-                            $("#disciplina_antiga").val(id_disciplina_nova);
-
-                            if ($('#s_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3] + ' option:selected').text() === 'EAD') {
-                                $('#ead_' + id_disciplina_nova).html(chs_ead + 1);
-                            }
-                            
-                            var chs_ead_disciplina = parseInt($('#chs_ead_disciplina_'+ id_disciplina_nova).html());                            
-                            if (($('#ead_' + id_disciplina_nova).html() * 1) == chs_ead_disciplina) {
-                                $('#ead_' + id_disciplina_nova).css({'color':'green'});
-                            } else {
-                                $('#ead_' + id_disciplina_nova).css({'color':'red'});
-                            }
-                        } else {
-                            $("#disciplina_antiga").val('');
-                        }
-
-                    }
-
-                });
-            }
-        });
-
-    }
+    horarioGravar(oferta, false);
 }
 
 function gravarSala(sala) {
-
-    //console.log("Value is " + sala.value + "\n" + "Old Value is " + $('#id_sala_antiga').val());
-    
-    var id_sala_antiga = $('#id_sala_antiga').val();
-    var id = sala.id;
-    var valor = sala.value;
-    var vetor = id.split('_');
-
-    var oferta = $('#d_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3]);
-    //console.log('#d_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3]);
-    
-    var vetor_oferta = oferta.val().split('_');
-    //console.log(oferta.val());
-    
-    if (oferta.val() != '') {
-        $('#metodo').val('gravar');
-
-        $('#id_turma').val(vetor[1]);
-        $('#id_dia').val(vetor[2]);
-        $('#id_hora').val(vetor[3]);
-        $('#id_oferta_disciplina').val(vetor_oferta[0]);
-        $('#id_usuario').val(vetor_oferta[1]);
-        $('#id_sala').val(valor);
-        
-        //console.log('Entrou no if: '+oferta.val());
-
-        var dados = $('#formulario').serialize();
-        $.ajax({
-            url: 'controller/' + classe + '.php',
-            type: 'post',
-            dataType: 'html',
-            data: dados
-        }).done(function (resposta) {
-            var json = JSON.parse(resposta);
-            $('#m_' + vetor[1] + '_' + vetor[2] + '_' + vetor[3]).html(json.msg);
-
-            //console.log('Sala selecionada:'+$('#' + id + ' option:selected').text()+" ID Sala Antiga: "+id_sala_antiga);
-
-            if (($('#' + id + ' option:selected').text() === 'EAD') && (id_sala_antiga != 2)) {
-                var chs_ead = parseInt($('#ead_' + vetor[1] + '_' + vetor_oferta[2]).html());
-                $('#ead_' + vetor[1] + '_' + vetor_oferta[2]).html(chs_ead + 1);
-            } else if (($('#' + id + ' option:selected').text() !== 'EAD') && (id_sala_antiga == 2)) {
-                $('#ead_' + vetor[1] + '_' + vetor_oferta[2]).html($('#ead_' + vetor[1] + '_' + vetor_oferta[2]).html() - 1);
-            }
-            
-            //alert(sala.getAttribute('id_sala_antiga'));
-            sala.setAttribute('id_sala_antiga',sala.value);  
-            //alert(sala.getAttribute('id_sala_antiga'));
-            
-            if ($('#ead_' + vetor[1] + '_' + vetor_oferta[2]).html() == $('#chs_ead_disciplina_' + vetor[1] + '_' + vetor_oferta[2]).html()) {
-                $('#ead_' + vetor[1] + '_' + vetor_oferta[2]).css({'color':'green'});
-            } else {
-                $('#ead_' + vetor[1] + '_' + vetor_oferta[2]).css({'color':'red'});
-            }
-            
-        });
-    }
-    
+    horarioGravar(sala, true);
 }

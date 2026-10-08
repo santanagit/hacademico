@@ -52,9 +52,10 @@ $(document).ready(function () {
 
 });
 
-function atualizarTurmaDividida(id_oferta_disciplina, valor) {
+function atualizarTurmaDividida(id_oferta_disciplina, valor, id_turma) {
     $('#metodo').val('atualizar_turma_dividida');
     $('#id_oferta_disciplina').val(id_oferta_disciplina);
+    $('#id_turma').val(id_turma);
 
     var dados = $('#formulario').serialize();
     dados += '&turma_dividida=' + encodeURIComponent(valor);
@@ -66,12 +67,7 @@ function atualizarTurmaDividida(id_oferta_disciplina, valor) {
         data: dados
     }).done(function (resposta) {
         var json = JSON.parse(resposta);
-
-        if (json.resultado) {
-            listar(json.msg);
-        } else {
-            $('#msg_' + $('#id_turma').val()).html(json.msg);
-        }
+        listar(json.msg);
     });
 }
 
